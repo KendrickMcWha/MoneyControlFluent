@@ -1,0 +1,47 @@
+﻿<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Inject] private IDialogService MyDialog { get; set; }
+    [Inject] private IMessageService MessageService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {}
+
+    protected override async void OnAfterRender(bool firstRender)
+    {}
+
+    public async void ShowOkMessage(string caption, string message)
+    {
+        // var parameters = new DialogParameters<MessageBoxOkOnly>
+        // {
+        //     {x => x.DialogBodyText, message},
+        //     {x => x.ButtonOkText, "OK"}
+        // };
+        // var dialog = await MyDialog.ShowAsync<MessageBoxOkOnly>(caption, parameters);
+        // var result = await dialog.Result;
+    }
+
+    public async void ProcessError(Exception ex)
+    {
+        string msg = ex.Message;
+        if (ex.InnerException is not null)
+        {
+            msg += Environment.NewLine + ex.InnerException;
+        }
+        await MessageService.ShowMessageBarAsync(msg, MessageIntent.Error);
+
+        // MessageService.ShowMessageBar(options =>
+        // {
+        //     options.Intent = MessageIntent.Error;
+        //     options.Title = "Error";
+        //     options.Body = msg;
+        //     options.Section = App.MESSAGES_DIALOG;
+        // }
+        // );
+
+        Serilog.Log.Warning(ex.Message);
+    }
+}

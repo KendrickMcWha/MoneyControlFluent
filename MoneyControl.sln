@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35201.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyControl.FluentUi", "MoneyControl.FluentUi\MoneyControl.FluentUi\MoneyControl.FluentUi.csproj", "{B0C889B3-C51B-4D3A-A813-1499D4F9E9F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyControl.FluentUi", "MoneyControl.FluentUi\MoneyControl.FluentUi\MoneyControl.FluentUi.csproj", "{B0C889B3-C51B-4D3A-A813-1499D4F9E9F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyControl.FluentUi.Client", "MoneyControl.FluentUi\MoneyControl.FluentUi.Client\MoneyControl.FluentUi.Client.csproj", "{52E032BD-CAC9-4FD9-B5DF-2EF91D3B9EEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyControl.FluentUi.Client", "MoneyControl.FluentUi\MoneyControl.FluentUi.Client\MoneyControl.FluentUi.Client.csproj", "{52E032BD-CAC9-4FD9-B5DF-2EF91D3B9EEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyControl.Domain", "MoneyControl.Domain\MoneyControl.Domain.csproj", "{301ADD31-22C3-46EF-BE80-7DBA4654B594}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{52E032BD-CAC9-4FD9-B5DF-2EF91D3B9EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52E032BD-CAC9-4FD9-B5DF-2EF91D3B9EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52E032BD-CAC9-4FD9-B5DF-2EF91D3B9EEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{301ADD31-22C3-46EF-BE80-7DBA4654B594}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{301ADD31-22C3-46EF-BE80-7DBA4654B594}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{301ADD31-22C3-46EF-BE80-7DBA4654B594}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{301ADD31-22C3-46EF-BE80-7DBA4654B594}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
+using MoneyControl.Domain.Data.Context;
 using MoneyControl.FluentUi.Client.Pages;
 using MoneyControl.FluentUi.Components;
+using MoneyControl.FluentUi.Utils;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,25 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddFluentUIComponents();
+
+builder.Services.AddDbContextFactory<SqliteDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("SqLiteConnection"))
+    );
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(theme: SerilogTheme.Colored)
+    .WriteTo.Debug()
+    .MinimumLevel.Debug()
+    .CreateLogger();
+Log.Information("Money Control Application Startup");
+
+// Migrations - Open package manager console.
+// Set Default project to app project. Set current directory where the startup project is.
+// Build a migration
+// Add-Migration MigrationNameHere -StartupProject MoneyControl.FluentUi -Project MoneyControl.Domain
+// Update a migration
+// Update-Database -StartupProject MoneyControl.FluentUi -Project MoneyControl.Domain
+
 
 var app = builder.Build();
 

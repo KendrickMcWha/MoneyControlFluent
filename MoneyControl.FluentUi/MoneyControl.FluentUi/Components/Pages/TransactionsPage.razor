@@ -1,0 +1,14 @@
+﻿@page "/transactions"
+@using MoneyControl.Domain.Models
+
+<h3>Transactions</h3>
+
+<FluentDataGrid ShowHover TGridItem="Transaction" Items="AllTransactions" Pagination="@pagination" >
+    <PropertyColumn Property="@(p => p.AccountId)" Title="Account" Sortable="true" />
+    <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" />
+    <PropertyColumn Property="@(p => p.TotalAmount)" Title="Total Amount" Sortable="true" />
+    <PropertyColumn Property="@(p => p.CategoryId)" Title="Category" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" />
+</FluentDataGrid>
+
+<FluentPaginator State="@pagination" />

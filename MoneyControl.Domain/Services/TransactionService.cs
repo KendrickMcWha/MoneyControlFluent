@@ -7,29 +7,53 @@ public class TransactionService : ServiceBase, IDisposable
     public void Dispose() => MyDbContext.Dispose();
 
 
-    public async Task<List<Transaction>> GetAllTransactions()
+    public async Task<List<Transaction>> GetAllTransactions(int acctId = 0)
     {
+        bool skipFilterAcct = acctId != 0;
         var query =
             from transaction in MyDbContext.AllTransactions
-                                            .AsNoTracking()
-                //select StaticBuilder.BuildTransactionFromEntity(transaction);
-            select new Transaction()
-            {
-                Id = transaction.Id,
-                CategoryId = transaction.CategoryId,
-                TotalAmount = transaction.TotalAmount,
-                TransType = transaction.TransType,
-                TransDate = transaction.TransDate,
-                PostDate = transaction.PostDate,
-                BudgetDate = transaction.BudgetDate,
-                //RegularPaymentId = transaction.RegularPaymentId,
-                Details = transaction.Details,
-                Reference = transaction.Reference,
-            };
+                                    .Where(x => skipFilterAcct || x.AccountId == acctId)
+                                    .AsNoTracking()
+            join acct in MyDbContext.AllAccounts
+                                    .AsNoTracking()
+                    on transaction.AccountId equals acct.Id
+            join cat in MyDbContext.AllCategories
+                                    .AsNoTracking()
+                    on transaction.CategoryId equals cat.Id
+            select StaticBuilder.BuildTransactionFromJoin(transaction, acct, cat);
 
         return await query.ToListAsync();
     }
+    public async Task<List<Transaction>> GetAllTransactions(TransactionParamPayload payload)
+    {
+        bool skipFilterAcct = payload.accountId == 0;
+        bool skipFilterCat = payload.categoryId == 0;
+        DateOnly startDate = payload.startDate ?? Constants.DataStartDate;
+        DateOnly endDate = payload.endDate ?? DateOnly.FromDateTime(DateTime.Now);
+        int startDateInt = Convert.ToInt32( startDate.ToString("yyyyMMdd"));
+        int endDateInt = Convert.ToInt32(endDate.ToString("yyyyMMdd"));
 
+        
+
+        var query =
+            from transaction in MyDbContext.AllTransactions
+                                    .Where(x => skipFilterAcct || x.AccountId == payload.accountId)
+                                    .Where(x => skipFilterCat || x.CategoryId == payload.categoryId)
+                                    .Where(x => x.BudgetDate >= startDateInt)
+                                    .Where(x => x.BudgetDate <= endDateInt)
+                                    .OrderBy(x => x.BudgetDate)
+                                    .AsNoTracking()
+            join acct in MyDbContext.AllAccounts
+                                    .AsNoTracking()
+                    on transaction.AccountId equals acct.Id
+            join cat in MyDbContext.AllCategories
+                                    .AsNoTracking()
+                    on transaction.CategoryId equals cat.Id
+            
+            select StaticBuilder.BuildTransactionFromJoin(transaction, acct, cat);
+
+        return await query.ToListAsync();
+    }
     //public async Task<List<Transaction>> GetAllTransactions(DateOnly dateFrom, DateOnly dateTo, Account acct)
     //{
     //    long fromDate = Convert.ToInt64(dateFrom.ToString("yyyyMMdd"));

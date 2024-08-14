@@ -6,13 +6,15 @@ public class TransactionEntity
     public int CategoryId { get; set; }
     public decimal TotalAmount { get; set; }
     public int TransType { get; set; }
-    public string TransDate { get; set; } 
-    public string PostDate { get; set; }
-    public string BudgetDate { get; set; }
-    public int? RegularPaymentId { get; set; }
+    public int TransDate { get; set; } 
+    public int PostDate { get; set; }
+    public int BudgetDate { get; set; }
+   // public int? RegularPaymentId { get; set; }
     public string Details { get; set; }
     public string Reference { get; set; }
 
     //public long TransDateInt => Convert.ToInt64(TransDate);
     //public long BudgetDateInt => Convert.ToInt64(BudgetDate);
+
+    
 }

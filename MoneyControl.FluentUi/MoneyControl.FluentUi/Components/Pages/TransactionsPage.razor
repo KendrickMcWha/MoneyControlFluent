@@ -3,11 +3,34 @@
 
 <h3>Transactions</h3>
 
+<FluentGrid>
+    <FluentGridItem>
+        <FluentDatePicker Label="Date From" @bind-Value=@SelectedDateFrom />
+    </FluentGridItem>
+    <FluentGridItem>
+        <FluentDatePicker Label="Date To" @bind-Value=@SelectedDateTo />
+    </FluentGridItem>
+    <FluentGridItem>
+        <FluentSelect Items="@AllAccounts" TOption="Account" @bind-SelectedOption="SelectedAccount" 
+        OptionText="@(i => i.Name)" Label="Account"/>
+    </FluentGridItem>
+    <FluentGridItem>
+        <FluentSelect Items="@AllCategories" TOption="Category" 
+                        @bind-SelectedOption="SelectedCategory"
+                        OptionText="@(i => i.Name)" Label="Category" 
+                        Height="20rem"/>
+    </FluentGridItem>
+    <FluentGridItem>
+        <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="GetTransactions" IconStart="@(new Icons.Regular.Size20.Search())" >Load</FluentButton>
+    </FluentGridItem>
+</FluentGrid>
+
 <FluentDataGrid ShowHover TGridItem="Transaction" Items="AllTransactions" Pagination="@pagination" >
-    <PropertyColumn Property="@(p => p.AccountId)" Title="Account" Sortable="true" />
-    <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" />
-    <PropertyColumn Property="@(p => p.TotalAmount)" Title="Total Amount" Sortable="true" />
-    <PropertyColumn Property="@(p => p.CategoryId)" Title="Category" Sortable="true" />
+    <PropertyColumn Property="@(p => p.AccountName)" Title="Account" Sortable="true" Width="10rem" />
+    <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" Width="8rem"/>
+    <PropertyColumn Property="@(p => p.TransTypeDisplay)" Title="Type" Sortable="true" Width="7rem" />
+    <PropertyColumn Property="@(p => p.AmountCurrency)" Title="Total Amount" Sortable="true" Width="8rem" Align="Align.End" Style="font-weight:bold"/>
+    <PropertyColumn Property="@(p => p.CategoryName)" Title="Category" Sortable="true" Width="20rem"/>
     <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" />
 </FluentDataGrid>
 

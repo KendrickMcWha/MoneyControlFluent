@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Data\DataStore\" />
     <Folder Include="Enums\" />
-    <Folder Include="Extension\" />
     <Folder Include="ServiceContracts\" />
   </ItemGroup>
 

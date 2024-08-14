@@ -4,6 +4,16 @@ namespace MoneyControl.Domain.Builders;
 public static class StaticBuilder
 {
 
+    public static Transaction BuildTransactionFromJoin(TransactionEntity trans, AccountEntity account, CategoryEntity category)
+    {
+        Transaction transaction = BuildTransactionFromEntity(trans);
+        transaction.AccountName = account?.Name ?? string.Empty;
+        transaction.CategoryName = category?.Name ?? string.Empty;
+
+        return transaction;
+
+    }
+
     public static Transaction BuildTransactionFromEntity(TransactionEntity entity)
     {
         Transaction trans = new Transaction()
@@ -13,14 +23,13 @@ public static class StaticBuilder
             CategoryId = entity.CategoryId,
             TotalAmount = entity.TotalAmount,
             TransType = entity.TransType,
-            //TransDate = DateOnly.ParseExact(entity.TransDate, "yyyyMMdd", CultureInfo.InvariantCulture),
-            //PostDate = DateOnly.ParseExact(entity.PostDate, "yyyyMMdd", CultureInfo.InvariantCulture),
-            //BudgetDate = DateOnly.ParseExact(entity.BudgetDate, "yyyyMMdd", CultureInfo.InvariantCulture),
-            TransDate = entity.TransDate,
-            BudgetDate = entity.BudgetDate,
+            TransDateStr = entity.TransDate,
+            PostDateStr = entity.PostDate,
+            BudgetDateStr = entity.BudgetDate,
           //  RegularPaymentId = entity.RegularPaymentId ?? -1,
             Details = entity.Details,
             Reference = entity.Reference,
+            BudgetDate = DateOnly.ParseExact(entity.BudgetDate.ToString(), "yyyyMMdd")
         };
 
         return trans;
@@ -38,7 +47,7 @@ public static class StaticBuilder
             //TransDate = DateOnly.ParseExact( entity.TransDate, "yyyyMMdd", CultureInfo.InvariantCulture),
             //PostDate = DateOnly.ParseExact(entity.PostDate, "yyyyMMdd", CultureInfo.InvariantCulture),
             //BudgetDate = DateOnly.ParseExact(entity.BudgetDate, "yyyyMMdd", CultureInfo.InvariantCulture),
-            RegularPaymentId = entity.RegularPaymentId,
+            //RegularPaymentId = entity.RegularPaymentId,
             Details = entity.Details,
             Reference = entity.Reference,
         };

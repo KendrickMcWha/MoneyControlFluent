@@ -1,6 +1,48 @@
 ﻿@page "/payee"
-<h3>PayeePage</h3>
+<h3>Payee</h3>
+
+<FluentDataGrid ShowHover TGridItem="Payee" Items="AllPayees" Style="width:36rem" Pagination="@pagination">
+    <PropertyColumn Property="@(p => p.Name)" Title="Payee" Sortable="true" Width="20rem" />
+    <PropertyColumn Property="@(p => p.DefaultCategoryName)" Title="Default Category" Sortable="true" Width="8rem" />
+    <TemplateColumn Width="6rem">
+        <FluentButton OnClick="@(() => EditPayee(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />
+        <FluentButton style="--accent-fill-rest: crimson"
+                      OnClick="@(() => DeletePayee(context))" IconStart="@(new Icons.Regular.Size20.Delete())" />
+    </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination" />
+<FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="NewPayee" IconStart="@(new Icons.Regular.Size20.New())">New</FluentButton>
+
+
 
 @code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IDialogService MyDialog { get; set; }
+    PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
+    private IQueryable<Payee> AllPayees { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetPayees();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+    private async Task GetPayees()
+    {
+        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+        var payees = await service.GetAllPayeesWithDefCat();
+        AllPayees = payees.AsQueryable();
+    }
+
+    private async void NewPayee() { }
+    private async void EditPayee(Payee payee) { }
+    private async void DeletePayee(Payee payee) { }
 
 }

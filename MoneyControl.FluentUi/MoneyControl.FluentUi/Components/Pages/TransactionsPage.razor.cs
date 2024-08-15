@@ -6,7 +6,6 @@ using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Models;
 using MoneyControl.Domain.Services;
 using MoneyControl.FluentUi.Components.Global;
-using System.Runtime.CompilerServices;
 
 namespace MoneyControl.FluentUi.Components.Pages;
 
@@ -19,11 +18,17 @@ public partial class TransactionsPage : ComponentBase
     private IQueryable<Transaction> AllTransactions { get; set; }
     private List<Account> AllAccounts { get; set; } = new();
     private List<Category> AllCategories { get; set; } = new();
-    private Account SelectedAccount { get; set; }
-    private Category SelectedCategory { get; set; }
-    private IEnumerable<Category> AllSelectedCategories { get; set; } 
-    private DateTime? SelectedDateFrom = Constants.DataStartDate.ToDateTime(new TimeOnly(0));
-    private DateTime? SelectedDateTo = DateTime.Now;
+    private Account _selectedAccount;
+    private Category _selectedCategory;
+    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, 1, 1); 
+    private DateTime? _selectedDateTo = DateTime.Now;
+    private Account SelectedAccount { get { return _selectedAccount; } set { _selectedAccount = value; ReloadData(); } }
+    private Category SelectedCategory { get { return _selectedCategory; } set { _selectedCategory = value; ReloadData(); } }
+    private IEnumerable<Category> AllSelectedCategories { get; set; }
+    private DateTime? SelectedDateFrom { get { return _selectedDateFrom; } set { _selectedDateFrom = value; ReloadData(); } }
+    private DateTime? SelectedDateTo { get { return _selectedDateTo; } set { _selectedDateTo = value; ReloadData(); } }
+
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,7 +36,7 @@ public partial class TransactionsPage : ComponentBase
         {
             await GetAccounts();
             await GetCategories();
-
+            await GetTransactions();
         }
         catch (Exception ex)
         {
@@ -44,16 +49,20 @@ public partial class TransactionsPage : ComponentBase
         using AccountService service = new(MyDbContextFactory.CreateDbContext());
         AllAccounts = await service.GetAllAccounts();
         AllAccounts.Insert(0, new Account() { Id = 0, Name = "All", Type = string.Empty });
-        SelectedAccount = AllAccounts[0];
+        _selectedAccount = AllAccounts[0];
     }
     private async Task GetCategories()
     {
         using CategoryService service = new(MyDbContextFactory.CreateDbContext());
         AllCategories = await service.GetAllCategories();
         AllCategories.Insert(0, new Category() { Id = 0, Name = "All", Type = string.Empty });
-        SelectedCategory = AllCategories[0];
+        _selectedCategory = AllCategories[0];
     }
-    private async void GetTransactions()
+    private async void ReloadData()
+    {
+        await GetTransactions();
+    }
+    private async Task GetTransactions()
     {
         using TransactionService service = new(MyDbContextFactory.CreateDbContext());
 

@@ -1,6 +1,78 @@
 ﻿@page "/category"
-<h3>CategoryPage</h3>
+
+<style>
+    .fluent-button::part(control) {
+        background-color: blue; /* Set the background color */
+        color: white; /* Set the text color */
+    }
+</style>
+
+<h3>Categories</h3>
+
+<FluentDataGrid ShowHover TGridItem="Category" Items="AllCategories" Style="width:36rem" Pagination="@pagination">
+    <PropertyColumn Property="@(p => p.Name)" Title="Account" Sortable="true" Width="20rem" />
+    <PropertyColumn Property="@(p => p.Type)" Title="Type" Sortable="true" Width="8rem" />
+        <TemplateColumn Width="6rem">
+            <FluentButton OnClick="@(() => EditCategory(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())"/>
+            <FluentButton style="--accent-fill-rest: crimson"
+                      OnClick="@(() => DeleteCategory(context))" IconStart="@(new Icons.Regular.Size20.Delete())" />
+        </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination" />
+<FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="NewCategory" IconStart="@(new Icons.Regular.Size20.New())">New</FluentButton>
+
+
 
 @code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IDialogService MyDialog { get; set; }
+    PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
+    private IQueryable<Category> AllCategories { get; set; }
 
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetCategories();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+    private async Task GetCategories()
+    {
+        using CategoryService service = new(MyDbContextFactory.CreateDbContext());
+        var accts = await service.GetAllCategories();
+        AllCategories = accts.AsQueryable();
+    }
+
+    private async void NewCategory() => ShowCategoryDialog(null);
+
+    private async void EditCategory(Category cat) => ShowCategoryDialog(cat);
+
+    private async void DeleteCategory(Category cat)
+    { }
+    private async void newCategory()
+    { }
+
+    private async void ShowCategoryDialog(Category cat)
+    {
+        string title = cat is null ? "New Category" : "Edit Category";
+
+        var dialog = await MyDialog.ShowDialogAsync<CategoryDialog>(cat, new MoneyControl.FluentUi.Builders.DialogParametersBuilder()
+                                                                                     .WithTitle(title)
+                                                                                     .WithHeight(300)
+                                                                                     .Build()
+            );
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {   
+            GetCategories();
+            InvokeAsync(StateHasChanged);
+        }
+    }
 }

@@ -89,7 +89,13 @@ public static class StaticBuilder
         };
         return payee;
     }
-    public static TransactionType BuildTransactionTypeFromEntity(TransactionType entity)
+    public static Payee BuildPayeeFromEntity(PayeeEntity entity, CategoryEntity category)
+    {
+        Payee payee = BuildPayeeFromEntity(entity);
+        payee.DefaultCategoryName = category?.Name ?? string.Empty;
+        return payee;
+    }
+    public static TransactionType BuildTransactionTypeFromEntity(TransactionTypeEntity entity)
     {
         TransactionType transactionType = new TransactionType()
         {

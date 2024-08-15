@@ -1,0 +1,80 @@
+﻿@implements IDialogContentComponent<Category>
+
+<FluentDialogHeader>
+
+</FluentDialogHeader>
+<FluentDialogFooter>
+    <FluentSpacer />
+    <FluentButton Appearance="Appearance.Accent" OnClick="SaveItem">Save</FluentButton>
+    <FluentButton BackgroundColor="Crimson" Color="White" OnClick="Cancel">Cancel</FluentButton>
+</FluentDialogFooter>
+
+<FluentDialogBody>
+    <FluentTextField @bind-Value="Name" Label="Name" />
+     <FluentSelect Items="@AllTransTypes" TOption="TransactionType"
+                   @bind-SelectedOption="SelectedTransType"
+                   OptionText="@(i => i.Description)" Label="Type"/> 
+</FluentDialogBody>
+
+@code {
+    [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Parameter] public Category Content { get; set; }
+    private List<TransactionType> AllTransTypes { get; set; }
+    private TransactionType SelectedTransType { get; set; }
+    private string Name { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Name = Content?.Name ?? string.Empty;            
+            using TransactionTypeService service = new(MyDbContextFactory.CreateDbContext());
+            AllTransTypes = await service.GetAllTransTypes();
+            SelectedTransType = Content is null ? null : AllTransTypes.Where(x => x.Description == Content.Type).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+    public async void Cancel() => await Dialog.CancelAsync();
+    private async void SaveItem()
+    {
+        int a = 1;
+        try
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                return;
+            }
+            if (SelectedTransType is null)
+            {
+                return;
+            }
+
+            Category category = new CategoryBuilder(Content)
+                                            .WithId(Content.Id)
+                                            .WithName(Name)
+                                            .WithType(SelectedTransType.Description)
+                                            .Build();
+            using CategoryService service = new(MyDbContextFactory.CreateDbContext());
+            Result result = await service.SaveCategory(category);
+
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Category: {result.Message}");
+                return;
+            }
+            await Dialog.CloseAsync(category);
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+
+}

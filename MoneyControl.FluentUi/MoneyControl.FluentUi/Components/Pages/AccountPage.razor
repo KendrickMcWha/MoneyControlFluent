@@ -1,6 +1,21 @@
 ﻿@page "/account"
-<h3>AccountPage</h3>
+
+<h3>Accounts</h3>
+<FluentDataGrid ShowHover TGridItem="Account" Items="AllAccounts" Style="width:20rem">
+    <PropertyColumn Property="@(p => p.Name)" Title="Account" Sortable="true" Width="10rem" />
+    <PropertyColumn Property="@(p => p.Type)" Title="Type" Sortable="true" Width="8rem" />
+</FluentDataGrid>
 
 @code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    private IQueryable<Account> AllAccounts { get; set; }
 
+
+    protected override async Task OnInitializedAsync()
+    {
+        using AccountService service = new(MyDbContextFactory.CreateDbContext());
+        var accts = await service.GetAllAccounts();
+        AllAccounts = accts.AsQueryable();
+    }
 }

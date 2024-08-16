@@ -1,0 +1,79 @@
+﻿@implements IDialogContentComponent<Payee>
+
+<FluentDialogHeader>
+
+</FluentDialogHeader>
+<FluentDialogFooter>
+    <FluentSpacer />
+    <FluentButton Appearance="Appearance.Accent" OnClick="SaveItem">Save</FluentButton>
+    <FluentButton BackgroundColor="Crimson" Color="White" OnClick="Cancel">Cancel</FluentButton>
+</FluentDialogFooter>
+
+<FluentDialogBody>
+    <FluentTextField @bind-Value="Name" Label="Name" Style="width:100%" />
+    <FluentSelect Items="@AllCategories" TOption="Category"
+                  @bind-SelectedOption="SelectedCategory"
+                  OptionText="@(i => i.Name)" Label="Default category" />
+</FluentDialogBody>
+
+@code {
+    [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Parameter] public Payee Content { get; set; }
+    private List<Category> AllCategories { get; set; }
+    private Category SelectedCategory { get; set; }
+    private string Name { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Name = Content?.Name ?? string.Empty;
+            using CategoryService service = new(MyDbContextFactory.CreateDbContext());
+            AllCategories = await service.GetAllCategories();
+            SelectedCategory = Content is null ? null : AllCategories.Where(x => x.Id == Content.DefaultCategoryId).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+    public async void Cancel() => await Dialog.CancelAsync();
+    private async void SaveItem()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                MyGlobalMsg.ShowWarningMessage("Attention", "Name is required.");
+                return; 
+            }
+            if (SelectedCategory is null)
+            {
+                MyGlobalMsg.ShowWarningMessage("Attention", "Category is required.");
+                return;
+            }
+
+            Payee payee = new PayeeBuilder(Content)
+                                        .WithName(Name)
+                                        .WithDefaultCategoryId(SelectedCategory.Id)
+                                        .Build();
+            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+            Result result = await service.SavePayee(payee);
+
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowWarningMessage("Attention", $"Error saving Payee: {result.Message}");
+                return;
+            }
+            await Dialog.CloseAsync(payee);
+
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }        
+}

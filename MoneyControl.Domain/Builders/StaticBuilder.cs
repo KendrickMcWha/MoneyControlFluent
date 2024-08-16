@@ -105,4 +105,18 @@ public static class StaticBuilder
         };
         return transactionType;
     }
+
+    public static PayeeDetails BuildPayeeDetails(PayeeDetailsEntity entity, PayeeEntity payee)
+    {
+        PayeeDetails payeeDetails = new PayeeDetails()
+        {
+            Id = entity.Id,
+            Details = entity.Details,
+            PayeeId = entity.PayeeId,
+            PayeeName = payee?.Name ?? string.Empty
+        };
+
+        return payeeDetails;
+    }
+
 }

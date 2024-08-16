@@ -65,7 +65,7 @@
 
             if (!result.Success)
             {
-                MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Category: {result.Message}");
+                MyGlobalMsg.ShowWarningMessage("Attention", $"Error saving Category: {result.Message}");
                 return;
             }
             await Dialog.CloseAsync(category);

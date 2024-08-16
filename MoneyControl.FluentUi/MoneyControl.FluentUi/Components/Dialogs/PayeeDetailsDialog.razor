@@ -1,0 +1,77 @@
+﻿@implements IDialogContentComponent<PayeeDetails>
+
+<FluentDialogHeader>
+
+</FluentDialogHeader>
+<FluentDialogFooter>
+    <FluentSpacer />
+    <FluentButton Appearance="Appearance.Accent" OnClick="SaveItem">Save</FluentButton>
+    <FluentButton BackgroundColor="Crimson" Color="White" OnClick="Cancel">Cancel</FluentButton>
+</FluentDialogFooter>
+
+<FluentDialogBody>
+    <FluentTextField @bind-Value="Details" Label="Details" />
+    <FluentSelect Items="@AllPayees" TOption="Payee"
+                  @bind-SelectedOption="SelectedPayee"
+                  OptionText="@(i => i.Name)" Label="Payee" />
+</FluentDialogBody>
+
+
+@code {
+    [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Parameter] public PayeeDetails Content { get; set; }
+    private List<Payee> AllPayees { get; set; }
+    private Payee SelectedPayee { get; set; }
+    private string Details { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Details = Content?.Details ?? string.Empty;
+            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+            AllPayees = await service.GetAllPayees();
+            SelectedPayee = Content is null ? null : AllPayees.Where(x => x.Id == Content.PayeeId).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+    public async void Cancel() => await Dialog.CancelAsync();
+    private async void SaveItem()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Details))
+            {
+                return;
+            }
+            if (SelectedPayee is null)
+            {
+                return;
+            }
+
+            PayeeDetails payeeDetails = new PayeeDetails() 
+            { 
+                Id =  Content?.Id ?? 0,
+                Details = Details, 
+                PayeeId = SelectedPayee.Id 
+            };
+            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+            Result result = await service.SavePayeeDetails(payeeDetails);
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Payee Details: {result.Message}");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+}

@@ -41,8 +41,42 @@
         AllPayees = payees.AsQueryable();
     }
 
-    private async void NewPayee() { }
-    private async void EditPayee(Payee payee) { }
-    private async void DeletePayee(Payee payee) { }
+    private async void NewPayee() => ShowPayeeDialog(null);
 
+    private async void EditPayee(Payee payee) => ShowPayeeDialog(payee);
+
+    private async void DeletePayee(Payee payee)
+    {
+        if (payee is null) return;
+
+        bool confirm = await MyGlobalMsg.ShowConfirmMessage("Confirm", $"Delete Payee {payee.Name}?");
+        if (!confirm) return;
+
+        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+        var result = await service.DeletePayee(payee);
+        if (!result.Success)
+        {
+            MyGlobalMsg.ShowWarningMessage("Attention", $"Error Deleting Payee : {result.Message}");
+        }
+        await GetPayees();
+
+    }
+
+    private async void ShowPayeeDialog(Payee payee)
+    {
+        string title = payee is null ? "New Payee" : "Edit Payee";
+
+        var dialog = await MyDialog.ShowDialogAsync<PayeeDialog>(payee, new MoneyControl.FluentUi.Builders.DialogParametersBuilder()
+                                                                                     .WithTitle(title)
+                                                                                     .WithHeight(300)
+                                                                                     .Build()
+            );
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            GetPayees();
+            InvokeAsync(StateHasChanged);
+        }
+    }
 }

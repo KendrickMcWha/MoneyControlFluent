@@ -1,0 +1,122 @@
+﻿@page "/payeedetails"
+<h3>Transaction Merchant Details</h3>
+
+<FluentDataGrid ShowHover TGridItem="PayeeDetails" Items="AllPayeeDetails" Style="width:36rem" Pagination="@pagination">
+    <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="20rem" />
+    <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" Width="8rem" />
+    <TemplateColumn Width="6rem">
+        <FluentButton OnClick="@(() => EditPayee(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />
+        <FluentButton style="--accent-fill-rest: crimson"
+                      OnClick="@(() => DeletePayee(context))" IconStart="@(new Icons.Regular.Size20.Delete())" />
+    </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination" />
+@* <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="NewPayee" IconStart="@(new Icons.Regular.Size20.New())">New</FluentButton> *@
+<FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="LoadData" IconStart="@(new Icons.Regular.Size20.New())">LoadData</FluentButton>
+<FluentSelect Items="@AllPayees" TOption="Payee"
+              @bind-SelectedOption="SelectedPayee"
+              OptionText="@(i => i.Name)" Label="Payee" />
+<FluentDataGrid ShowHover TGridItem="TransDetails" Items="AllTransDetails.AsQueryable()" Pagination="@pagination2">
+    <PropertyColumn Property="@(p => p.Details)" title="Details" Width="30rem" />
+    <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Width="30rem" />
+    <TemplateColumn Width="6rem">
+        <FluentButton OnClick="@(() => EditTransDetails(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />        
+    </TemplateColumn>
+</FluentDataGrid>
+<FluentPaginator State="@pagination2" />
+
+@code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IDialogService MyDialog { get; set; }
+    PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
+    PaginationState pagination2 = new PaginationState { ItemsPerPage = 15 };
+
+    private IQueryable<PayeeDetails> AllPayeeDetails { get; set; }
+    private List<TransDetails> AllTransDetails { get; set; } = new();
+    private List<Payee> AllPayees { get; set; } = new();
+    private Payee SelectedPayee { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await GetPayeeDetails();
+            await GetPayees();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+    private async Task GetPayeeDetails()
+    {
+        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+        var payees = await service.GetAllPayeeDetails();
+        AllPayeeDetails = payees.AsQueryable();
+    }
+    private async Task GetPayees()
+    {
+        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
+        var payees = await service.GetAllPayees();
+        AllPayees = payees;
+    }
+
+
+    private async void NewPayee() => ShowPayeeDialog(null);
+
+    private async void EditPayee(PayeeDetails payee) => ShowPayeeDialog(payee);
+
+    private async void DeletePayee(PayeeDetails payee)
+    { }
+
+    private async void ShowPayeeDialog(PayeeDetails payee)
+    {
+        string title = payee is null ? "New Payee" : "Edit Payee";
+
+        var dialog = await MyDialog.ShowDialogAsync<PayeeDialog>(payee, new MoneyControl.FluentUi.Builders.DialogParametersBuilder()
+                                                                                     .WithTitle(title)
+                                                                                     .WithHeight(300)
+                                                                                     .Build()
+            );
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            GetPayeeDetails();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+
+    public async void LoadData()
+    {
+        AllTransDetails.Clear();
+
+        using TransactionService service = new(MyDbContextFactory.CreateDbContext());
+        var allTrans = await service.GetAllTransactions(new TransactionParamPayload(0, 0, 
+                                                            Constants.DataStartDate, DateOnly.FromDateTime(DateTime.Now))                                                                                 
+                                                        );
+        using PayeeService payeeService = new(MyDbContextFactory.CreateDbContext());
+        var allPayees = await payeeService.GetAllPayees();
+
+        foreach (var trans in allTrans)
+        {
+            if (!AllTransDetails.Any(x => x.Details == trans.Details))
+            {
+                string payName = allPayees.FirstOrDefault(x => x.Name == trans.Details)?.Name ?? string.Empty;
+                AllTransDetails.Add(new TransDetails(trans.Details, payName));    
+            }
+
+        }
+        AllTransDetails = AllTransDetails.OrderBy(x => x.Details).ToList();
+
+    }
+
+    public async void EditTransDetails(TransDetails details)
+    {
+        
+    }
+
+    public record TransDetails(string Details, string PayeeName);
+
+}

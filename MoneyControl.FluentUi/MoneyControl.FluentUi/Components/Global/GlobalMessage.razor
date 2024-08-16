@@ -22,6 +22,35 @@
         // };
         // var dialog = await MyDialog.ShowAsync<MessageBoxOkOnly>(caption, parameters);
         // var result = await dialog.Result;
+        // var dialog = await MyDialog.ShowMessageBoxAsync(new DialogParameters<MessageBoxContent>()
+        //     {
+        //         Content = new()
+        //         {
+        //             Title = caption,
+        //             MarkupMessage = new MarkupString(message)
+        //         },
+        //         PrimaryAction = "Ok",
+        //         Width = "300px",
+        //         SecondaryActionEnabled = false
+        //     });
+        var dialog = await MyDialog.ShowInfoAsync(message, caption);
+        var result = await dialog.Result;
+    }
+    public async void ShowInfoMessage(string caption, string message)
+    {
+        var dialog = await MyDialog.ShowInfoAsync(message, caption);
+        var result = await dialog.Result;
+    }
+    public async void ShowWarningMessage(string caption, string message)
+    {
+        var dialog = await MyDialog.ShowWarningAsync(message, caption);
+        var result = await dialog.Result;
+    }
+    public async Task<bool> ShowConfirmMessage(string caption, string message)
+    {
+        var dialog = await MyDialog.ShowConfirmationAsync(message, caption);
+        var result = await dialog.Result;
+        return !result.Cancelled;
     }
 
     public async void ProcessError(Exception ex)

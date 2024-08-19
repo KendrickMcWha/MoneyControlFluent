@@ -25,7 +25,7 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUICategoryService CategoryService { get; set; } = null!;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private IQueryable<Category> AllCategories { get; set; }
@@ -44,8 +44,7 @@
     }
     private async Task GetCategories()
     {
-        using CategoryService service = new(MyDbContextFactory.CreateDbContext());
-        var accts = await service.GetAllCategories();
+        var accts = await CategoryService.GetAllCategories();
         AllCategories = accts.AsQueryable();
     }
 

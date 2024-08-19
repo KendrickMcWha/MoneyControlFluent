@@ -17,7 +17,7 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUIPayeeService PayeeService { get; set; } = null;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private IQueryable<Payee> AllPayees { get; set; }
@@ -36,8 +36,7 @@
     }
     private async Task GetPayees()
     {
-        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-        var payees = await service.GetAllPayeesWithDefCat();
+        var payees = await PayeeService.GetAllPayeesWithDefCat();
         AllPayees = payees.AsQueryable();
     }
 
@@ -52,8 +51,7 @@
         bool confirm = await MyGlobalMsg.ShowConfirmMessage("Confirm", $"Delete Payee {payee.Name}?");
         if (!confirm) return;
 
-        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-        var result = await service.DeletePayee(payee);
+        var result = await PayeeService.DeletePayee(payee);
         if (!result.Success)
         {
             MyGlobalMsg.ShowWarningMessage("Attention", $"Error Deleting Payee : {result.Message}");

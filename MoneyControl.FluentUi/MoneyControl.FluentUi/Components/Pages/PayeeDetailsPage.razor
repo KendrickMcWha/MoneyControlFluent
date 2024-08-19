@@ -27,7 +27,8 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUIPayeeService PayeeService { get; set; } = null;
+    [Inject] public IUITransactionService TransactionService { get; set; } = null;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     PaginationState pagination2 = new PaginationState { ItemsPerPage = 15 };
@@ -50,14 +51,12 @@
     }
     private async Task GetPayeeDetails()
     {
-        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-        var payees = await service.GetAllPayeeDetails();
+        var payees = await PayeeService.GetAllPayeeDetails();
         AllPayeeDetails = payees.AsQueryable();
     }
     private async Task GetPayees()
     {
-        using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-        var payees = await service.GetAllPayees();
+        var payees = await PayeeService.GetAllPayees();
         AllPayees = payees;
     }
 
@@ -92,12 +91,10 @@
     {
         AllTransDetails.Clear();
 
-        using TransactionService service = new(MyDbContextFactory.CreateDbContext());
-        var allTrans = await service.GetAllTransactions(new TransactionParamPayload(0, 0, 
+        var allTrans = await TransactionService.GetAllTransactions(new TransactionParamPayload(0, 0, 
                                                             Constants.DataStartDate, DateOnly.FromDateTime(DateTime.Now))                                                                                 
                                                         );
-        using PayeeService payeeService = new(MyDbContextFactory.CreateDbContext());
-        var allPayees = await payeeService.GetAllPayees();
+        var allPayees = await PayeeService.GetAllPayees();
 
         foreach (var trans in allTrans)
         {

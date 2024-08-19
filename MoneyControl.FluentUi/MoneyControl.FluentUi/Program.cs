@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
 using MoneyControl.Domain.Data.Context;
+using MoneyControl.Domain.Extension;
 using MoneyControl.FluentUi.Client.Pages;
 using MoneyControl.FluentUi.Components;
+using MoneyControl.FluentUi.DAL;
 using MoneyControl.FluentUi.Utils;
 using Serilog;
 
@@ -14,9 +16,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddFluentUIComponents();
 
+builder.Services.AddDomain();
+
 builder.Services.AddDbContextFactory<SqliteDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SqLiteConnection"))
     );
+
+builder.Services.AddTransient<IUIAccountService, UIAccountService>();
+builder.Services.AddTransient<IUICategoryService, UICategoryService>();
+builder.Services.AddTransient<IUIPayeeService, UIPayeeService>();
+builder.Services.AddTransient<IUITransactionService, UITransactionService>();
+builder.Services.AddTransient<IUITransactionTypeService, UITransactionTypeService>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(theme: SerilogTheme.Colored)

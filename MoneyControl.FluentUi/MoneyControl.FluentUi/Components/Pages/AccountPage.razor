@@ -8,14 +8,14 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUIAccountService AccountService { get; set; } = null!;
+
     private IQueryable<Account> AllAccounts { get; set; }
 
 
     protected override async Task OnInitializedAsync()
     {
-        using AccountService service = new(MyDbContextFactory.CreateDbContext());
-        var accts = await service.GetAllAccounts();
+        var accts = await AccountService.GetAllAccounts();
         AllAccounts = accts.AsQueryable();
     }
 }

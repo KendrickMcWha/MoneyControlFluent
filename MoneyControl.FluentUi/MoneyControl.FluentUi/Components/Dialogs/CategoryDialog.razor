@@ -19,8 +19,7 @@
 @code {
     [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }    
-    [Inject] public IUICategoryService CategoryService { get; set; } = null;
-    [Inject] public IUITransactionTypeService TransactionTypeService { get; set; } = null;
+    [Inject] public IUICategoryService MyCategoryService { get; set; } = null;
     [Parameter] public Category Content { get; set; }
     private List<TransactionType> AllTransTypes { get; set; }
     private TransactionType SelectedTransType { get; set; }
@@ -31,7 +30,7 @@
         try
         {
             Name = Content?.Name ?? string.Empty;            
-            AllTransTypes = await TransactionTypeService.GetAllTransTypes();
+            AllTransTypes = await MyCategoryService.GetTransactionTypes();
             SelectedTransType = Content is null ? null : AllTransTypes.Where(x => x.Description == Content.Type).FirstOrDefault();
         }
         catch (Exception ex)
@@ -43,15 +42,16 @@
     public async void Cancel() => await Dialog.CancelAsync();
     private async void SaveItem()
     {
-        int a = 1;
         try
         {
             if (string.IsNullOrEmpty(Name))
             {
+                MyGlobalMsg.ShowWarningMessage("Attention", "Name is required.");
                 return;
             }
             if (SelectedTransType is null)
             {
+                MyGlobalMsg.ShowWarningMessage("Attention", "Transaction Type is required.");
                 return;
             }
 
@@ -61,7 +61,7 @@
                                             .WithType(SelectedTransType.Description)
                                             .Build();
             
-            Result result = await CategoryService.SaveCategory(category);
+            Result result = await MyCategoryService.SaveCategory(category);
 
             if (!result.Success)
             {

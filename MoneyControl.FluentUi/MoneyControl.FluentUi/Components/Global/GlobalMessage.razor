@@ -6,6 +6,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Inject] private IDialogService MyDialog { get; set; }
     [Inject] private IMessageService MessageService { get; set; }
+    [Inject] private IToastService ToastService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {}
@@ -60,6 +61,7 @@
         {
             msg += Environment.NewLine + ex.InnerException;
         }
+        ToastService.ShowError(msg);
         await MessageService.ShowMessageBarAsync(msg, MessageIntent.Error);
 
         // MessageService.ShowMessageBar(options =>

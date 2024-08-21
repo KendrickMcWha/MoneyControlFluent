@@ -2,6 +2,7 @@
 using MoneyControl.Domain.Builders;
 using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Models;
+using MoneyControl.Domain.Services;
 using MoneyControl.FluentUi.DAL;
 
 namespace MoneyControl.FluentUi.DAL;
@@ -13,9 +14,7 @@ public class UITransactionTypeService : UIServiceBase, IDisposable, IUITransacti
 
     public async Task<List<TransactionType>> GetAllTransTypes()
     {
-        var query =
-            from transType in MyDbContext.AllTransactionTypes.AsNoTracking()
-            select StaticBuilder.BuildTransactionTypeFromEntity(transType);
-        return await query.ToListAsync();
+        using TransactionTypeService service = new(MyDbContext);
+        return await service.GetAllTransTypes();
     }
 }

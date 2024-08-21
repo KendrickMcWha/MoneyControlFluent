@@ -1,0 +1,118 @@
+﻿<h3>Buffer</h3>
+<FluentStack Style="margin-bottom:1rem">
+    <FluentSelect TOption="Account" Items="AllAccounts" @bind-bind-SelectedOption="@SelectedAccount"
+                  Label="Account" Placeholder="Select Account" Width="20rem" Height="6rem" OptionText="@(p => p.Name)" />
+</FluentStack>
+@* <FluentButton Id="MyUploadButton" Appearance="Appearance.Accent">
+    Select File
+</FluentButton> *@
+
+<FluentStack>
+    <FluentInputFile @ref="@myFileByBuffer"
+                     AnchorId="MyUploadBuffer"
+                     DragDropZoneVisible="false"
+                     Mode="InputFileMode.Buffer"
+                     Multiple="true"
+                     MaximumFileSize="@(1000 * 1024 * 1024)"
+                     Accept=".csv"
+                     OnProgressChange="@OnProgressChangeAsync"
+                     OnCompleted="@OnCompleted" />
+</FluentStack>
+<FluentProgress Visible="@(progressPercent > 0)" Min="0" Max="100" Value="@progressPercent" />
+<FluentLabel Alignment="HorizontalAlignment.Center">
+    @progressTitle
+</FluentLabel>
+
+<FluentButton Appearance="Appearance.Accent" Id="MyUploadBuffer">
+    Upload files
+</FluentButton>
+
+<FluentButton @onclick="@((e) => IsCanceled = true)">
+    Cancel
+</FluentButton>
+@if (Files.Any())
+{
+    <h4>File(s) uploaded:</h4>
+    <ul>
+        @foreach (var file in Files)
+        {
+            <li>
+                @file.Value
+            </li>
+        }
+    </ul>
+
+    @if (AllFileLines.Any())
+    {
+        <h4>File Lines</h4>
+        @foreach (var line in AllFileLines)
+        {
+            <li>
+                @line
+            </li>
+        }
+    }
+}
+<b>@AllFileLines.Count</b>
+
+
+@code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUIAccountService AccountService { get; set; } = null!;
+    private List<Account> AllAccounts { get; set; } = new();
+    private Account SelectedAccount { get; set; }
+
+    FluentInputFile? myFileByBuffer = default!;
+    // FluentInputFileEventArgs[] Files = Array.Empty<FluentInputFileEventArgs>();
+    int? progressPercent;
+    string? progressTitle;
+    bool IsCanceled;
+    Dictionary<int, string> Files = new();
+
+    List<string> AllFileLines { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllAccounts = await AccountService.GetAllAccounts();
+    }
+
+    async Task OnProgressChangeAsync(FluentInputFileEventArgs file)
+    {
+        progressPercent = file.ProgressPercent;
+        progressTitle = file.ProgressTitle;
+
+        // To cancel?
+        file.IsCancelled = IsCanceled;
+
+        // New file
+        if (!Files.ContainsKey(file.Index))
+        {
+            var localFile = Path.GetTempFileName() + file.Name;
+            Files.Add(file.Index, localFile);
+        }
+
+        // Write to the FileStream
+        // await file.Buffer.AppendToFileAsync(Files[file.Index]);
+
+        // using var memoryStream = new MemoryStream(file.Buffer.Data);
+        // using StreamReader reader = new StreamReader(memoryStream);
+        // string line;
+        // while ((line = await reader.ReadLineAsync()) != null)
+        // {
+        //     AllFileLines.Add(line);
+        // }
+        AllFileLines = await  ImportAgent.LoadImportFile(file, Files);
+    }
+
+    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    {
+        progressPercent = myFileByBuffer!.ProgressPercent;
+        progressTitle = myFileByBuffer!.ProgressTitle;
+
+        // For the demo, delete these files.
+        foreach (var file in Files)
+        {
+            File.Delete(file.Value);
+        }
+    }
+}

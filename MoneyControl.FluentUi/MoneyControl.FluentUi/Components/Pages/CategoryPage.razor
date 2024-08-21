@@ -25,7 +25,7 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IUICategoryService CategoryService { get; set; } = null!;
+    [Inject] public IUICategoryService MyCategoryService { get; set; } = null!;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private IQueryable<Category> AllCategories { get; set; }
@@ -44,7 +44,7 @@
     }
     private async Task GetCategories()
     {
-        var accts = await CategoryService.GetAllCategories();
+        var accts = await MyCategoryService.GetAllCategories();
         AllCategories = accts.AsQueryable();
     }
 

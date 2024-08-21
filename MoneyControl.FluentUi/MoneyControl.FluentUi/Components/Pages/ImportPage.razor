@@ -1,6 +1,32 @@
 ﻿@page "/import"
-<h3>ImportPage</h3>
+@using System.Text
+<h3>Import Transactions</h3>
+
+<FluentTabs @bind-bind-ActiveTabId="@activeid" OnTabChange="HandleOnTabChange">
+    <FluentTab Label="Buffer" Id="tab-1">
+        <ImportFileBufferComponent />
+    </FluentTab>
+    <FluentTab Label="Stream" Id="tab-2">
+        <ImportFileStreamComponent />
+    </FluentTab>
+</FluentTabs>
 
 @code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUIAccountService AccountService { get; set; } = null!;
+    private List<Account> AllAccounts { get; set; } = new();
+    private Account SelectedAccount{ get; set; }
 
+    string? activeid = "tab-1";
+    FluentTab? changedto;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllAccounts = await AccountService.GetAllAccounts();
+    }
+
+    private void HandleOnTabChange(FluentTab tab)
+    {
+        changedto = tab;
+    }
 }

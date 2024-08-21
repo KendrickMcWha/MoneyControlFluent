@@ -3,6 +3,7 @@ using MoneyControl.Domain.Builders;
 using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Data.Entities;
 using MoneyControl.Domain.Models;
+using MoneyControl.Domain.Services;
 using MoneyControl.FluentUi.DAL;
 
 namespace MoneyControl.FluentUi.DAL;
@@ -14,81 +15,52 @@ public class UIPayeeService : UIServiceBase, IDisposable, IUIPayeeService
 
     public async Task<Result> DeletePayee(Payee payee)
     {
-        PayeeEntity entity = MyDbContext.AllPayees.Where(x => x.Id == payee.Id).FirstOrDefault();
-        if (entity is null)
-        {
-            return new Result(false, "Could not locate Payee.");
-        }
-
-        MyDbContext.AllPayees.Remove(entity);
-        await MyDbContext.SaveChangesAsync();
-        return SuccessResult;
+        using PayeeService service = new(MyDbContext);
+        return await service.DeletePayee(payee);
     }
 
 
     public async Task<List<PayeeDetails>> GetAllPayeeDetails()
     {
-        var query =
-            from details in MyDbContext.AllPayeesDetails.AsNoTracking()
-            join payee in MyDbContext.AllPayees.AsNoTracking()
-                on details.PayeeId equals payee.Id
-            select StaticBuilder.BuildPayeeDetails(details, payee);
-
-        return await query.ToListAsync();
+        using PayeeService service = new(MyDbContext);
+        return await service.GetAllPayeeDetails();
     }
 
     public async Task<List<Payee>> GetAllPayees()
     {
-        var query =
-            from payee in MyDbContext.AllPayees.AsNoTracking()
-            select StaticBuilder.BuildPayeeFromEntity(payee);
-        return await query.ToListAsync();
+        CreateDbContext();
+        using PayeeService service = new(MyDbContext);
+        return await service.GetAllPayees();
     }
 
     public async Task<List<Payee>> GetAllPayeesWithDefCat()
     {
-        var query =
-            from payee in MyDbContext.AllPayees.AsNoTracking()
-            join cat in MyDbContext.AllCategories.AsNoTracking()
-                on payee.DefaultCategoryId equals cat.Id
-            select StaticBuilder.BuildPayeeFromEntity(payee, cat);
-        return await query.ToListAsync();
+        using PayeeService service = new(MyDbContext);
+        return await service.GetAllPayeesWithDefCat();
+    }
+    public async Task<List<Category>> GetAllCategories()
+    {
+        using CategoryService service = new(MyDbContext);
+        return await service.GetAllCategories();
+    }
+    public async Task<List<Transaction>> GetAllTransactions(TransactionParamPayload payload)
+    {
+        CreateDbContext();
+        using TransactionService service = new(MyDbContext);
+        return await service.GetAllTransactions(payload);
     }
 
     public async Task<Result> SavePayee(Payee payee)
     {
-        if (MyDbContext.AllPayees.Any(x => x.Id != payee.Id && x.Name == payee.Name))
-        {
-            return new Result(false, "Duplicate Payee Name.");
-        }
-
-        PayeeEntity entity = MyDbContext.AllPayees.Where(x => x.Id == payee.Id).FirstOrDefault();
-        if (entity == null)
-        {
-            entity = new PayeeEntity();
-            MyDbContext.AllPayees.Add(entity);
-        }
-        entity.Name = payee.Name;
-        entity.DefaultCategoryId = payee.DefaultCategoryId;
-
-        await MyDbContext.SaveChangesAsync();
-
-        return SuccessResult;
+        CreateDbContext();
+        using PayeeService service = new(MyDbContext);
+        return await service.SavePayee(payee);
     }
 
     public async Task<Result> SavePayeeDetails(PayeeDetails details)
     {
-        PayeeDetailsEntity entity = MyDbContext.AllPayeesDetails.Where(x => x.Id == details.Id).FirstOrDefault();
-        if (entity == null)
-        {
-            entity = new PayeeDetailsEntity();
-            MyDbContext.AllPayeesDetails.Add(entity);
-        }
-        entity.Details = details.Details;
-        entity.PayeeId = details.PayeeId;
-
-        await MyDbContext.SaveChangesAsync();
-
-        return SuccessResult;
+        CreateDbContext();
+        using PayeeService service = new(MyDbContext);
+        return await service.SavePayeeDetails(details);
     }
 }

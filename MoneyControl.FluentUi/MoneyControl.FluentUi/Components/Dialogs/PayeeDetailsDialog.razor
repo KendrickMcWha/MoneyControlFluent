@@ -20,7 +20,7 @@
 @code {
     [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUIPayeeService MyPayeeService { get; set; }
     [Parameter] public PayeeDetails Content { get; set; }
     private List<Payee> AllPayees { get; set; }
     private Payee SelectedPayee { get; set; }
@@ -31,8 +31,7 @@
         try
         {
             Details = Content?.Details ?? string.Empty;
-            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-            AllPayees = await service.GetAllPayees();
+            AllPayees = await MyPayeeService.GetAllPayees();
             SelectedPayee = Content is null ? null : AllPayees.Where(x => x.Id == Content.PayeeId).FirstOrDefault();
         }
         catch (Exception ex)
@@ -60,8 +59,7 @@
                 Details = Details, 
                 PayeeId = SelectedPayee.Id 
             };
-            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-            Result result = await service.SavePayeeDetails(payeeDetails);
+            Result result = await MyPayeeService.SavePayeeDetails(payeeDetails);
             if (!result.Success)
             {
                 MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Payee Details: {result.Message}");

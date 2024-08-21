@@ -1,0 +1,102 @@
+﻿<h3>ImportFileStream</h3>
+<FluentStack Style="margin-bottom:1rem">
+    <FluentSelect TOption="Account" Items="AllAccounts" @bind-bind-SelectedOption="@SelectedAccount"
+                  Label="Account" Placeholder="Select Account" Width="20rem" Height="6rem" OptionText="@(p => p.Name)" />
+</FluentStack>
+
+<FluentInputFile @ref="@myFileByStream"
+                 AnchorId="MyUploadStream"
+                 DragDropZoneVisible="false"
+                 Mode="InputFileMode.Stream"
+                 Multiple="true"
+                 MaximumFileSize="@(20 * 1024 * 1024)"
+                 Accept=".csv"
+                 OnFileUploaded="@OnFileUploadedAsync"
+                 OnCompleted="@OnCompleted" />
+
+<FluentProgress Min="0" Max="100" Value="@progressPercent" Visible="@(progressPercent > 0)" />
+<FluentLabel Alignment="HorizontalAlignment.Center">
+    @progressTitle
+</FluentLabel>
+
+<FluentButton Appearance="Appearance.Accent" Id="MyUploadStream">
+    Upload files
+</FluentButton>
+
+@if (Files.Any())
+{
+    <h4>File(s) uploaded:</h4>
+    <ul>
+        @foreach (var file in Files)
+        {
+            <li>
+                @file
+            </li>
+        }
+    </ul>
+    @if (AllFileLines.Any())
+    {
+        <h4>File Lines</h4>
+        @foreach (var line in AllFileLines)
+        {
+            <li>
+                @line
+            </li>
+        }
+    }
+}
+
+@code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUIAccountService AccountService { get; set; } = null!;
+    private List<Account> AllAccounts { get; set; } = new();
+    private Account SelectedAccount { get; set; }
+    List<string> AllFileLines { get; set; } = new();
+
+    FluentInputFile? myFileByStream = default!;
+    int? progressPercent;
+    string? progressTitle;
+
+    List<string> Files = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllAccounts = await AccountService.GetAllAccounts();
+    }
+    async Task OnFileUploadedAsync(FluentInputFileEventArgs file)
+    {
+        progressPercent = file.ProgressPercent;
+        progressTitle = file.ProgressTitle;
+
+        var localFile = Path.GetTempFileName() + file.Name;
+        Files.Add(localFile);
+
+        // Write to the FileStream
+        // See other samples: https://docs.microsoft.com/en-us/aspnet/core/blazor/file-uploads
+        await using FileStream fs = new(localFile, FileMode.OpenOrCreate);
+        await file.Stream!.CopyToAsync(fs);
+        using StreamReader read = new StreamReader(file.Stream);
+
+       
+
+        string line;
+        while ((line = await read.ReadLineAsync()) != null)
+        {
+            AllFileLines.Add(line);
+        }
+
+        await file.Stream!.DisposeAsync();
+    }
+
+    void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    {
+        progressPercent = myFileByStream!.ProgressPercent;
+        progressTitle = myFileByStream!.ProgressTitle;
+
+        // For the demo, delete these files.
+        foreach (var file in Files)
+        {
+            File.Delete(file);
+        }
+    }
+}

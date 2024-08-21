@@ -42,6 +42,12 @@ Log.Information("Money Control Application Startup");
 // Update a migration
 // Update-Database -StartupProject MoneyControl.FluentUi -Project MoneyControl.Domain
 
+builder.Services
+      .AddServerSideBlazor()
+      .AddHubOptions(opt =>
+      {
+          opt.DisableImplicitFromServicesParameters = true;
+      });
 
 var app = builder.Build();
 

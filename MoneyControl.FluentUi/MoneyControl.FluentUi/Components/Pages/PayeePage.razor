@@ -17,7 +17,7 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IUIPayeeService PayeeService { get; set; } = null;
+    [Inject] public IUIPayeeService MyPayeeService { get; set; } = null;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private IQueryable<Payee> AllPayees { get; set; }
@@ -36,7 +36,7 @@
     }
     private async Task GetPayees()
     {
-        var payees = await PayeeService.GetAllPayeesWithDefCat();
+        var payees = await MyPayeeService.GetAllPayeesWithDefCat();
         AllPayees = payees.AsQueryable();
     }
 
@@ -51,7 +51,7 @@
         bool confirm = await MyGlobalMsg.ShowConfirmMessage("Confirm", $"Delete Payee {payee.Name}?");
         if (!confirm) return;
 
-        var result = await PayeeService.DeletePayee(payee);
+        var result = await MyPayeeService.DeletePayee(payee);
         if (!result.Success)
         {
             MyGlobalMsg.ShowWarningMessage("Attention", $"Error Deleting Payee : {result.Message}");

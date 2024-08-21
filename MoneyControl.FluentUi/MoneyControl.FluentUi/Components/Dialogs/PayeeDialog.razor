@@ -19,7 +19,7 @@
 @code {
     [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
+    [Inject] public IUIPayeeService MyPayeeService { get; set; } = null!;
     [Parameter] public Payee Content { get; set; }
     private List<Category> AllCategories { get; set; }
     private Category SelectedCategory { get; set; }
@@ -30,8 +30,7 @@
         try
         {
             Name = Content?.Name ?? string.Empty;
-            using CategoryService service = new(MyDbContextFactory.CreateDbContext());
-            AllCategories = await service.GetAllCategories();
+            AllCategories = await MyPayeeService.GetAllCategories();
             SelectedCategory = Content is null ? null : AllCategories.Where(x => x.Id == Content.DefaultCategoryId).FirstOrDefault();
         }
         catch (Exception ex)
@@ -60,8 +59,7 @@
                                         .WithName(Name)
                                         .WithDefaultCategoryId(SelectedCategory.Id)
                                         .Build();
-            using PayeeService service = new(MyDbContextFactory.CreateDbContext());
-            Result result = await service.SavePayee(payee);
+            Result result = await MyPayeeService.SavePayee(payee);
 
             if (!result.Success)
             {

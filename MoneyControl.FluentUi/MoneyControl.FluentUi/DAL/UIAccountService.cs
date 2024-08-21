@@ -12,11 +12,11 @@ public class UIAccountService : UIServiceBase, IUIAccountService, IDisposable
     public UIAccountService(IDbContextFactory<SqliteDbContext> factory) : base(factory)
     {        
     }
-    public void Dispose() => MyDbContext.Dispose();
+    public void Dispose() => MyDbContext?.Dispose();
 
     public async Task<List<Account>> GetAllAccounts()
     {
-        using AccountService service = new(MyDbContextFactory.CreateDbContext());
+        using AccountService service = new(MyDbContext);
         return await service.GetAllAccounts();
     }
 }

@@ -27,8 +27,7 @@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IUIPayeeService PayeeService { get; set; } = null;
-    [Inject] public IUITransactionService TransactionService { get; set; } = null;
+    [Inject] public IUIPayeeService MyPayeeService { get; set; } = null;
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     PaginationState pagination2 = new PaginationState { ItemsPerPage = 15 };
@@ -51,12 +50,12 @@
     }
     private async Task GetPayeeDetails()
     {
-        var payees = await PayeeService.GetAllPayeeDetails();
+        var payees = await MyPayeeService.GetAllPayeeDetails();
         AllPayeeDetails = payees.AsQueryable();
     }
     private async Task GetPayees()
     {
-        var payees = await PayeeService.GetAllPayees();
+        var payees = await MyPayeeService.GetAllPayees();
         AllPayees = payees;
     }
 
@@ -91,10 +90,10 @@
     {
         AllTransDetails.Clear();
 
-        var allTrans = await TransactionService.GetAllTransactions(new TransactionParamPayload(0, 0, 
+        var allTrans = await MyPayeeService.GetAllTransactions(new TransactionParamPayload(0, 0, 
                                                             Constants.DataStartDate, DateOnly.FromDateTime(DateTime.Now))                                                                                 
                                                         );
-        var allPayees = await PayeeService.GetAllPayees();
+        var allPayees = await MyPayeeService.GetAllPayees();
 
         foreach (var trans in allTrans)
         {

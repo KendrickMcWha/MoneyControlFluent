@@ -1,0 +1,112 @@
+﻿
+<FluentStack>
+    <FluentInputFile @ref="@myFileByBuffer"
+                     AnchorId="MyUploadBuffer"
+                     DragDropZoneVisible="false"
+                     Mode="InputFileMode.Buffer"
+                     Multiple="true"
+                     MaximumFileSize="@(1000 * 1024 * 1024)"
+                     Accept=".csv"
+                     OnProgressChange="@OnProgressChangeAsync"
+                     OnCompleted="@OnCompleted" />
+</FluentStack>
+<FluentProgress Visible="@(progressPercent > 0)" Min="0" Max="100" Value="@progressPercent" />
+<FluentLabel Alignment="HorizontalAlignment.Center">
+    @progressTitle
+</FluentLabel>
+<FluentStack Orientation="Orientation.Horizontal">
+    <FluentButton Appearance="Appearance.Accent" Id="MyUploadBuffer">
+        Upload files
+    </FluentButton>
+
+    <FluentButton @onclick="@((e) => IsCanceled = true)">
+        Cancel
+    </FluentButton>
+    @if (Files.Any())
+    {
+        <h4>File(s) uploaded:</h4>
+        <ul>
+            @foreach (var file in Files)
+            {
+                <li>
+                    @file.Value
+                </li>
+            }
+        </ul>
+    }
+</FluentStack>
+
+
+@if (AllFileLines.Any())
+{
+    <FluentDataGrid ShowHover TGridItem="ImportFileLineRecord" Items="AllFileLines" Pagination="@pagination">
+        <PropertyColumn Property="@(p => p.Date)" Title="Date" Sortable="true" Width="8rem" />
+        <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="30rem" />
+        <TemplateColumn Title="Funds Out" Sortable="true" Width="8rem" Align="Align.End">
+            <span>@(decimal.TryParse(context.FundsOut, out var amount2) ? $"{amount2:C}" : context.FundsOut)</span>
+        </TemplateColumn>
+        <TemplateColumn Title="Funds In" Sortable="true" Width="8rem" Align="Align.End">
+            <span>@(decimal.TryParse(context.FundsIn, out var amount2) ? $"{amount2:C}" : context.FundsIn)</span>
+        </TemplateColumn>
+        <PropertyColumn Property="@(p => p.DefaultCatId)" Title="CatId" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DefaultCat)" Title="Default Category" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DefaultPayId)" Title="PayeeId" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DefaultPay)" Title="Default Payee" Sortable="true" />
+    </FluentDataGrid>
+    <FluentPaginator State="@pagination" />
+}
+
+@code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUIImportService MyImportService { get; set; }
+    [Parameter] public Account MyAccount{ get; set; }
+    public IQueryable<ImportFileLineRecord> AllFileLines { get; set; }
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
+    FluentInputFile? myFileByBuffer = default!;
+    int? progressPercent;
+    string? progressTitle;
+    bool IsCanceled;
+    Dictionary<int, string> Files = new();
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<ImportFileLineRecord> allLines = new();
+        AllFileLines = allLines.AsQueryable();
+    }
+
+    private async Task OnProgressChangeAsync(FluentInputFileEventArgs file)
+    {
+        progressPercent = file.ProgressPercent;
+        progressTitle = file.ProgressTitle;
+
+        // To cancel?
+        file.IsCancelled = IsCanceled;
+
+        // New file
+        if (!Files.ContainsKey(file.Index))
+        {
+            var localFile = Path.GetTempFileName() + file.Name;
+            Files.Add(file.Index, localFile);
+        }
+
+        var lines = await ImportAgent.LoadImportFile(MyAccount.Id, file, Files);
+        MyImportService.SetDefaultCategories(lines);
+        AllFileLines = lines.AsQueryable();
+    }
+
+    private void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
+    {
+        progressPercent = myFileByBuffer!.ProgressPercent;
+        progressTitle = myFileByBuffer!.ProgressTitle;
+
+        // For the demo, delete these files.
+        foreach (var file in Files)
+        {
+            File.Delete(file.Value);
+        }
+    }
+
+}

@@ -11,7 +11,7 @@
 
 <FluentDialogBody>
     <FluentTextField @bind-Value="Name" Label="Name" Style="width:100%" />
-    <FluentSelect Items="@AllCategories" TOption="Category"
+    <FluentSelect Items="@AllCategories" TOption="Category" Height="10rem"
                   @bind-SelectedOption="SelectedCategory"
                   OptionText="@(i => i.Name)" Label="Default category" />
 </FluentDialogBody>
@@ -55,7 +55,13 @@
                 return;
             }
 
-            Payee payee = new PayeeBuilder(Content)
+            Payee payee = Content;
+            if (payee is null)
+            {
+                payee = new();
+            }
+
+            payee = new PayeeBuilder(payee)
                                         .WithName(Name)
                                         .WithDefaultCategoryId(SelectedCategory.Id)
                                         .Build();

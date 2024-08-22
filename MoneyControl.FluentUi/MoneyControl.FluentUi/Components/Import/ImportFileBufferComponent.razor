@@ -46,7 +46,7 @@
 </FluentStack>
 @if (AllFileLines.Any())
 {
-        <FluentDataGrid ShowHover TGridItem="FileLine" Items="AllFileLines" Pagination="@pagination">
+        <FluentDataGrid ShowHover TGridItem="ImportFileLineRecord" Items="AllFileLines" Pagination="@pagination">
             <PropertyColumn Property="@(p => p.Date)" Title="Date" Sortable="true" Width="8rem" />
             <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="30rem"/>
             <TemplateColumn Title="Funds Out" Sortable="true" Width="8rem" Align="Align.End">
@@ -77,11 +77,11 @@
     bool IsCanceled;
     Dictionary<int, string> Files = new();
 
-    IQueryable<FileLine> AllFileLines { get; set; } = null!;
+    IQueryable<ImportFileLineRecord> AllFileLines { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        List<FileLine> allLines = new();
+        List<ImportFileLineRecord> allLines = new();
         AllFileLines = allLines.AsQueryable();
         AllAccounts = await MyImportService.GetAllAccounts();
     }
@@ -101,7 +101,7 @@
             Files.Add(file.Index, localFile);
         }
 
-        var lines = await  ImportAgent.LoadImportFile(file, Files);
+        var lines = await  ImportAgent.LoadImportFile( SelectedAccount.Id, file, Files);
         MyImportService.SetDefaultCategories(lines);
         AllFileLines = lines.AsQueryable();
     }

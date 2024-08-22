@@ -27,9 +27,9 @@ public class PayeeService : ServiceBase, IDisposable
     {
         var query =
             from details in MyDbContext.AllPayeesDetails.AsNoTracking()
-            join payee in MyDbContext.AllPayees.AsNoTracking()
-                on details.PayeeId equals payee.Id
-            select StaticBuilder.BuildPayeeDetails(details,  payee);
+                //join payee in MyDbContext.AllPayees.AsNoTracking()
+                //    on details.PayeeId equals payee.Id
+            select StaticBuilder.BuildPayeeDetails(details, null);//,  payee);
 
         return await query.ToListAsync();
     }

@@ -2,14 +2,28 @@
 @using System.Text
 <h3>Import Transactions</h3>
 
-<FluentTabs @bind-bind-ActiveTabId="@activeid" OnTabChange="HandleOnTabChange">
+<FluentStack Style="margin-bottom:1rem">
+    <FluentSelect Items="AllAccounts" TOption="Account"
+                  @bind-SelectedOption="@SelectedAccount"
+                  OptionText="@(p => p.Name)"
+                  Label="Account" Placeholder="Select Account" Width="20rem" Height="6rem" />
+</FluentStack>
+
+@if (SelectedAccount is not null)
+{
+ 
+        <ImportFileSimpliiComponent MyAccount="@SelectedAccount" />
+ 
+}
+
+@* <FluentTabs @bind-bind-ActiveTabId="@activeid" OnTabChange="HandleOnTabChange">
     <FluentTab Label="Buffer" Id="tab-1">
         <ImportFileBufferComponent />
     </FluentTab>
     <FluentTab Label="Stream" Id="tab-2">
         <ImportFileStreamComponent />
     </FluentTab>
-</FluentTabs>
+</FluentTabs> *@
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
@@ -17,16 +31,16 @@
     private List<Account> AllAccounts { get; set; } = new();
     private Account SelectedAccount{ get; set; }
 
-    string? activeid = "tab-1";
-    FluentTab? changedto;
+    // string? activeid = "tab-1";
+    // FluentTab? changedto;
 
     protected override async Task OnInitializedAsync()
     {
         AllAccounts = await AccountService.GetAllAccounts();
     }
 
-    private void HandleOnTabChange(FluentTab tab)
-    {
-        changedto = tab;
-    }
+    // private void HandleOnTabChange(FluentTab tab)
+    // {
+    //     changedto = tab;
+    // }
 }

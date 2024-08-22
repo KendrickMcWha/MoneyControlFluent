@@ -14,32 +14,39 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
         using AccountService service = new(MyDbContext);
         return await service.GetAllAccounts();
     }
-    public async void SetDefaultCategories(List<FileLine> allFileLines)
+    public async void SetDefaultCategories(List<ImportFileLineRecord> allFileLines)
     {
         CreateDbContext();
         PayeeService payeeService = new(MyDbContext);
         var allPayees = await payeeService.GetAllPayees();
        // CreateDbContext();
         var allPayeeDetails = await payeeService.GetAllPayeeDetails();
+        CategoryService categoryService = new(MyDbContext);
+        var allCategories = await categoryService.GetAllCategories();
 
         foreach (var fileLine in allFileLines)
         {
             string details = fileLine.Details;
+            Payee payee = null;
             var payeeDetails = allPayeeDetails.Find(x => x.PayeeName == details);
             if (payeeDetails is not null)
             {
-                var detailsPayee = allPayees.Where(x => x.Id == payeeDetails.PayeeId).FirstOrDefault();
-                fileLine.DefaultCat = detailsPayee.Name;
-                fileLine.DefaultCatId = detailsPayee.Id;
-                continue;
+                payee = allPayees.Find(x => x.Id == payeeDetails.PayeeId);                
             }
-            var payee = allPayees.Find(x => x.Name == details);
+            if (payee is null)
+            {
+                payee = allPayees.Find(x => x.Name == details);
+            }
             if (payee is not null)
             {
-                fileLine.DefaultCat = payee.Name;
-                fileLine.DefaultCatId = payee.Id;
+                fileLine.DefaultPay = payee.Name;
+                fileLine.DefaultPayId = payee.Id;
+                fileLine.DefaultCatId = payee.DefaultCategoryId;
+                fileLine.DefaultCat = allCategories.Find(x => x.Id == payee.DefaultCategoryId)?.Name ?? string.Empty;
             }
         }
+
+
 
     }
 }

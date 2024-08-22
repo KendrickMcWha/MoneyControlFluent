@@ -14,8 +14,9 @@ public abstract class UIServiceBase
         MyDbContextFactory = factory;
         CreateDbContext();
     }
-    public void CreateDbContext()
+    public SqliteDbContext CreateDbContext()
     {
         MyDbContext = MyDbContextFactory.CreateDbContext();        
+        return MyDbContext;
     }
 }

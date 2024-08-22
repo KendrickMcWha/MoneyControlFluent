@@ -3,5 +3,5 @@
 public interface IUIImportService
 {
     Task<List<Account>> GetAllAccounts();
-    void SetDefaultCategories(List<FileLine> allFileLines);
+    void SetDefaultCategories(List<ImportFileLineRecord> allFileLines);
 }

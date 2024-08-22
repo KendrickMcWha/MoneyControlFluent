@@ -9,21 +9,33 @@
         <FluentButton style="--accent-fill-rest: crimson"
                       OnClick="@(() => DeletePayee(context))" IconStart="@(new Icons.Regular.Size20.Delete())" />
     </TemplateColumn>
+    @* <TemplateColumn Width="6rem">
+        <FluentSelect Items="@AllPayees" TOption="Payee" Height="10rem"
+                      @bind-SelectedOption="SelectedMergePayee"
+                      OptionText="@(i => i.Name)" />
+    </TemplateColumn> *@
 </FluentDataGrid>
 <FluentPaginator State="@pagination" />
-@* <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="NewPayee" IconStart="@(new Icons.Regular.Size20.New())">New</FluentButton> *@
 <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="LoadData" IconStart="@(new Icons.Regular.Size20.New())">LoadData</FluentButton>
-<FluentSelect Items="@AllPayees" TOption="Payee"
+
+<FluentSelect Items="@AllPayees" TOption="Payee" Height="10rem"
               @bind-SelectedOption="SelectedPayee"
-              OptionText="@(i => i.Name)" Label="Payee" />
+              OptionText="@(i => i.Name)" />
 <FluentDataGrid ShowHover TGridItem="TransDetails" Items="AllTransDetails.AsQueryable()" Pagination="@pagination2">
     <PropertyColumn Property="@(p => p.Details)" title="Details" Width="30rem" />
+    <PropertyColumn Property="@(p => p.PayeeDetails)" Title="Payee Details" Width="30rem" />
     <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Width="30rem" />
     <TemplateColumn Width="6rem">
         <FluentButton OnClick="@(() => EditTransDetails(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />        
     </TemplateColumn>
 </FluentDataGrid>
 <FluentPaginator State="@pagination2" />
+<hr />
+<FluentButton OnClick="MakePayDetails">Make Pay Details</FluentButton>
+<div>
+    Loading Link: @IsLoadingLink
+</div>
+
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
@@ -36,16 +48,26 @@
     private List<TransDetails> AllTransDetails { get; set; } = new();
     private List<Payee> AllPayees { get; set; } = new();
     private Payee SelectedPayee { get; set; }
+    private Payee SelectedMergePayee { get; set; }
+    private bool IsLoading = true;
+    private bool IsLoadingLink = true;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             await GetPayeeDetails();
             await GetPayees();
+            Task.WaitAll();
+            await LinkPayeeDetails();
         }
         catch (Exception ex)
         {
             MyGlobalMsg.ProcessError(ex);
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
     private async Task GetPayeeDetails()
@@ -56,9 +78,32 @@
     private async Task GetPayees()
     {
         var payees = await MyPayeeService.GetAllPayees();
-        AllPayees = payees;
+        AllPayees = payees.OrderBy(x => x.Name).ToList();
     }
+    private async Task LinkPayeeDetails()
+    {
+        try
+        {
+            foreach (var details in AllPayeeDetails.Where(x => x.PayeeId != 0).ToList())
+            {
+                var payee = AllPayees.Find(x => x.Id == details.PayeeId);
+                if (payee is not null)
+                {
+                    details.PayeeName = payee.Name;
+                }
+            }
+        }
+        catch (Exception)
+        {
 
+            throw;
+        }
+        finally
+        {
+            IsLoadingLink = false;
+        }
+
+    }
 
     private async void NewPayee() => ShowPayeeDialog(null);
 
@@ -94,13 +139,15 @@
                                                             Constants.DataStartDate, DateOnly.FromDateTime(DateTime.Now))                                                                                 
                                                         );
         var allPayees = await MyPayeeService.GetAllPayees();
+        var allDetails = await MyPayeeService.GetAllPayeeDetails();
 
         foreach (var trans in allTrans)
         {
             if (!AllTransDetails.Any(x => x.Details == trans.Details))
             {
                 string payName = allPayees.FirstOrDefault(x => x.Name == trans.Details)?.Name ?? string.Empty;
-                AllTransDetails.Add(new TransDetails(trans.Details, payName));    
+                string payDetails = allDetails.Find(x => x.Details == trans.Details)?.Details ?? string.Empty;
+                AllTransDetails.Add(new TransDetails(trans.Details, payName, payDetails));    
             }
 
         }
@@ -110,9 +157,25 @@
 
     public async void EditTransDetails(TransDetails details)
     {
-        
+
     }
 
-    public record TransDetails(string Details, string PayeeName);
+
+
+    private void MakePayDetails()
+    {
+        List<PayeeDetails> allPayeeDetails = AllPayeeDetails.ToList();
+
+        foreach (var transDetails in AllTransDetails)
+        {
+            PayeeDetails details = allPayeeDetails.Find(x => x.Details == transDetails.Details);
+            if (details is null)
+            {
+                details = new() { Details = transDetails.Details };
+                MyPayeeService.SavePayeeDetails(details);
+            }
+           
+        }
+    }
 
 }

@@ -2,8 +2,8 @@
 <h3>Payee</h3>
 
 <FluentDataGrid ShowHover TGridItem="Payee" Items="AllPayees" Style="width:36rem" Pagination="@pagination">
-    <PropertyColumn Property="@(p => p.Name)" Title="Payee" Sortable="true" Width="20rem" />
-    <PropertyColumn Property="@(p => p.DefaultCategoryName)" Title="Default Category" Sortable="true" Width="8rem" />
+    <PropertyColumn Property="@(p => p.Name)" Title="Payee" Sortable="true" Width="30rem" />
+    <PropertyColumn Property="@(p => p.DefaultCategoryName)" Title="Default Category" Sortable="true" Width="10rem" />
     <TemplateColumn Width="6rem">
         <FluentButton OnClick="@(() => EditPayee(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />
         <FluentButton style="--accent-fill-rest: crimson"
@@ -21,7 +21,7 @@
     [Inject] public IDialogService MyDialog { get; set; }
     PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private IQueryable<Payee> AllPayees { get; set; }
-
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,7 +56,9 @@
         {
             MyGlobalMsg.ShowWarningMessage("Attention", $"Error Deleting Payee : {result.Message}");
         }
+
         await GetPayees();
+        StateHasChanged();
 
     }
 

@@ -15,6 +15,7 @@ public class UIPayeeService : UIServiceBase, IDisposable, IUIPayeeService
 
     public async Task<Result> DeletePayee(Payee payee)
     {
+        CreateDbContext();
         using PayeeService service = new(MyDbContext);
         return await service.DeletePayee(payee);
     }
@@ -22,6 +23,7 @@ public class UIPayeeService : UIServiceBase, IDisposable, IUIPayeeService
 
     public async Task<List<PayeeDetails>> GetAllPayeeDetails()
     {
+        CreateDbContext();
         using PayeeService service = new(MyDbContext);
         return await service.GetAllPayeeDetails();
     }
@@ -35,7 +37,7 @@ public class UIPayeeService : UIServiceBase, IDisposable, IUIPayeeService
 
     public async Task<List<Payee>> GetAllPayeesWithDefCat()
     {
-        using PayeeService service = new(MyDbContext);
+        using PayeeService service = new(CreateDbContext());
         return await service.GetAllPayeesWithDefCat();
     }
     public async Task<List<Category>> GetAllCategories()

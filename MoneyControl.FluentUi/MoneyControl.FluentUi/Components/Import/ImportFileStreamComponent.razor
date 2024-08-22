@@ -75,10 +75,10 @@
         // See other samples: https://docs.microsoft.com/en-us/aspnet/core/blazor/file-uploads
         await using FileStream fs = new(localFile, FileMode.OpenOrCreate);
         await file.Stream!.CopyToAsync(fs);
+        
         using StreamReader read = new StreamReader(file.Stream);
 
        
-
         string line;
         while ((line = await read.ReadLineAsync()) != null)
         {

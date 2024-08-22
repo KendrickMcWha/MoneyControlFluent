@@ -1,12 +1,13 @@
 ﻿<h3>Buffer</h3>
 <FluentStack Style="margin-bottom:1rem">
-    <FluentSelect TOption="Account" Items="AllAccounts" @bind-bind-SelectedOption="@SelectedAccount"
-                  Label="Account" Placeholder="Select Account" Width="20rem" Height="6rem" OptionText="@(p => p.Name)" />
+    <FluentSelect Items="AllAccounts" TOption="Account" 
+                  @bind-SelectedOption="@SelectedAccount"
+                  OptionText="@(p => p.Name)"
+                  Label="Account" Placeholder="Select Account" Width="20rem" Height="6rem"  />
 </FluentStack>
-@* <FluentButton Id="MyUploadButton" Appearance="Appearance.Accent">
-    Select File
-</FluentButton> *@
 
+@if (SelectedAccount is not null)
+{
 <FluentStack>
     <FluentInputFile @ref="@myFileByBuffer"
                      AnchorId="MyUploadBuffer"
@@ -22,58 +23,67 @@
 <FluentLabel Alignment="HorizontalAlignment.Center">
     @progressTitle
 </FluentLabel>
+<FluentStack Orientation="Orientation.Horizontal">
+    <FluentButton Appearance="Appearance.Accent" Id="MyUploadBuffer">
+        Upload files
+    </FluentButton>
 
-<FluentButton Appearance="Appearance.Accent" Id="MyUploadBuffer">
-    Upload files
-</FluentButton>
-
-<FluentButton @onclick="@((e) => IsCanceled = true)">
-    Cancel
-</FluentButton>
-@if (Files.Any())
+    <FluentButton @onclick="@((e) => IsCanceled = true)">
+        Cancel
+    </FluentButton>
+    @if(Files.Any())
+        {
+            <h4>File(s) uploaded:</h4>
+            <ul>
+                @foreach (var file in Files)
+                {
+                    <li>
+                        @file.Value
+                    </li>
+                }
+            </ul>
+        }
+</FluentStack>
+@if (AllFileLines.Any())
 {
-    <h4>File(s) uploaded:</h4>
-    <ul>
-        @foreach (var file in Files)
-        {
-            <li>
-                @file.Value
-            </li>
-        }
-    </ul>
-
-    @if (AllFileLines.Any())
-    {
-        <h4>File Lines</h4>
-        @foreach (var line in AllFileLines)
-        {
-            <li>
-                @line
-            </li>
-        }
-    }
+        <FluentDataGrid ShowHover TGridItem="FileLine" Items="AllFileLines" Pagination="@pagination">
+            <PropertyColumn Property="@(p => p.Date)" Title="Date" Sortable="true" Width="8rem" />
+            <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="30rem"/>
+            <TemplateColumn Title="Funds Out" Sortable="true" Width="8rem" Align="Align.End">
+                <span>@(decimal.TryParse(context.FundsOut, out var amount2) ? $"{amount2:C}" : context.FundsOut)</span>
+            </TemplateColumn>
+            <TemplateColumn Title="Funds In" Sortable="true" Width="8rem" Align="Align.End">
+                <span>@(decimal.TryParse(context.FundsIn, out var amount2) ? $"{amount2:C}" : context.FundsIn )</span>
+            </TemplateColumn>
+            <PropertyColumn Property="@(p => p.DefaultCat)" Title="Default Category" Sortable="true"  />
+        </FluentDataGrid>
+        <FluentPaginator State="@pagination" />
 }
-<b>@AllFileLines.Count</b>
+<b>@AllFileLines.Count()</b>
+}
 
+<b>Acct: @SelectedAccount?.Name</b>
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
-    [Inject] public IUIAccountService AccountService { get; set; } = null!;
+    [Inject] public IUIImportService MyImportService { get; set; } = null!;
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
     private List<Account> AllAccounts { get; set; } = new();
     private Account SelectedAccount { get; set; }
 
     FluentInputFile? myFileByBuffer = default!;
-    // FluentInputFileEventArgs[] Files = Array.Empty<FluentInputFileEventArgs>();
     int? progressPercent;
     string? progressTitle;
     bool IsCanceled;
     Dictionary<int, string> Files = new();
 
-    List<string> AllFileLines { get; set; } = new();
+    IQueryable<FileLine> AllFileLines { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        AllAccounts = await AccountService.GetAllAccounts();
+        List<FileLine> allLines = new();
+        AllFileLines = allLines.AsQueryable();
+        AllAccounts = await MyImportService.GetAllAccounts();
     }
 
     async Task OnProgressChangeAsync(FluentInputFileEventArgs file)
@@ -91,17 +101,9 @@
             Files.Add(file.Index, localFile);
         }
 
-        // Write to the FileStream
-        // await file.Buffer.AppendToFileAsync(Files[file.Index]);
-
-        // using var memoryStream = new MemoryStream(file.Buffer.Data);
-        // using StreamReader reader = new StreamReader(memoryStream);
-        // string line;
-        // while ((line = await reader.ReadLineAsync()) != null)
-        // {
-        //     AllFileLines.Add(line);
-        // }
-        AllFileLines = await  ImportAgent.LoadImportFile(file, Files);
+        var lines = await  ImportAgent.LoadImportFile(file, Files);
+        MyImportService.SetDefaultCategories(lines);
+        AllFileLines = lines.AsQueryable();
     }
 
     void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)

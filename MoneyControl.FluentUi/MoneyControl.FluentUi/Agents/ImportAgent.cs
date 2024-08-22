@@ -32,9 +32,8 @@ public static class ImportAgent
         return fileLines;
     }
 
-    public static async Task<List<string>> LoadImportFile(FluentInputFileEventArgs file, Dictionary<int, string> Files)
+    public static async Task<List<FileLine>> LoadImportFile(FluentInputFileEventArgs file, Dictionary<int, string> Files)
     {
-        List<string> allLines = new();
         List<FileLine> allFileLines = new();
 
         await file.Buffer.AppendToFileAsync(Files[file.Index]);
@@ -44,12 +43,35 @@ public static class ImportAgent
         string line;
         while ((line = await reader.ReadLineAsync()) != null)
         {
-            allLines.Add(line);
-            allFileLines.Add(new FileLine(line));
+            try
+            {
+
+            List<string> data = line.Split(',').ToList();
+            if (data[0].ToUpperInvariant() == "DATE") continue;
+            if (data.Count >= 4)
+            {
+                    Decimal.TryParse(data[2], out decimal fundsOut);
+                    Decimal.TryParse(data[2], out decimal fundsIn);
+                    allFileLines.Add(    
+                        new FileLine(line,
+                                        data,
+                                        data[0] ?? string.Empty,
+                                        data[1] ?? string.Empty,
+                                        data[2] ?? string.Empty,
+                                        data[3] ?? string.Empty)
+                        );
+            }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
         }
 
-        return allLines;
+        return allFileLines;
     }
 
-    public record FileLine(string line);
+    
+    
 }

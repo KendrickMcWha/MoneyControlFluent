@@ -1,4 +1,5 @@
-﻿<CascadingValue Value="this">
+﻿@using MoneyControl.FluentUi.Components.FluentUI
+<CascadingValue Value="this">
     @ChildContent
 </CascadingValue>
 
@@ -6,7 +7,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Inject] private IDialogService MyDialog { get; set; }
     [Inject] private IMessageService MessageService { get; set; }
-    [Inject] private IToastService ToastService { get; set; }
+    [Inject] private IToastService MyToastService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {}
@@ -16,24 +17,6 @@
 
     public async void ShowOkMessage(string caption, string message)
     {
-        // var parameters = new DialogParameters<MessageBoxOkOnly>
-        // {
-        //     {x => x.DialogBodyText, message},
-        //     {x => x.ButtonOkText, "OK"}
-        // };
-        // var dialog = await MyDialog.ShowAsync<MessageBoxOkOnly>(caption, parameters);
-        // var result = await dialog.Result;
-        // var dialog = await MyDialog.ShowMessageBoxAsync(new DialogParameters<MessageBoxContent>()
-        //     {
-        //         Content = new()
-        //         {
-        //             Title = caption,
-        //             MarkupMessage = new MarkupString(message)
-        //         },
-        //         PrimaryAction = "Ok",
-        //         Width = "300px",
-        //         SecondaryActionEnabled = false
-        //     });
         var dialog = await MyDialog.ShowInfoAsync(message, caption);
         var result = await dialog.Result;
     }
@@ -61,18 +44,29 @@
         {
             msg += Environment.NewLine + ex.InnerException;
         }
-        ToastService.ShowError(msg);
-        await MessageService.ShowMessageBarAsync(msg, MessageIntent.Error);
+        // MessageService.ShowMessageBar(msg, MessageIntent.Error, App.MESSAGES);
+        // await MessageService.ShowMessageBarAsync(msg, MessageIntent.Error, App.MESSAGES_TOP);
+        ShowToastMessage( ex);
 
-        // MessageService.ShowMessageBar(options =>
-        // {
-        //     options.Intent = MessageIntent.Error;
-        //     options.Title = "Error";
-        //     options.Body = msg;
-        //     options.Section = App.MESSAGES_DIALOG;
-        // }
-        // );
+        //ToastService.ShowError(msg);
+
 
         Serilog.Log.Warning(ex.Message);
+    }
+
+    private async void ShowToastMessage( Exception ex)
+    {
+        
+        MyToastService.ShowToast<ToastErrorComponent, ToastErrorData>(new ToastParameters<ToastErrorData>()
+            {   
+                Intent = ToastIntent.Custom,
+                //Title = "UNHANDLED EXCEPTION",
+                Timeout = 0,
+                //Icon = (new Icons.Regular.Size20.HeartPulseError(), Color.Accent),
+                Content = new ToastErrorData()
+                {
+                    ToastParam = ex.Message
+                }
+            });
     }
 }

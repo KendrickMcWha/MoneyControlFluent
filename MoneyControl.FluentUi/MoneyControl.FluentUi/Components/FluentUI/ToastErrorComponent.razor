@@ -1,0 +1,19 @@
+﻿@implements IToastContentComponent<ToastErrorData>
+
+<div style="width: 100%">
+    <div style="display: flex;">
+        <FluentIcon Value="@(new Icons.Regular.Size24.Open())" Title="Open" Color="Color.Error" />        
+        <h4 style="margin-left:0.5rem;margin-top:0.5rem">@Content.ToastTitle</h4>
+        <FluentSpacer />
+    </div>
+    <h5>@Content.ToastParam</h5>
+    <div style="display: flex; justify-content: flex-end">
+        <FluentButton Appearance="Appearance.Accent" Color="White" BackgroundColor="red" @onclick="Toast.Close">Close</FluentButton>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private FluentToast Toast { get; set; } = default!;
+
+    [Parameter] public ToastErrorData Content { get; set; } = default!;
+}

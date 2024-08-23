@@ -15,19 +15,19 @@ public class UITransactionService : UIServiceBase, IDisposable, IUITransactionSe
 
     public async Task<List<Account>> GetAllAccounts()
     {
-        using AccountService service = new(MyDbContext);
+        using AccountService service = new(NewDbContext);
         return await service.GetAllAccounts();
     }
 
     public async Task<List<Category>> GetAllCategories()
     {
-        using CategoryService service = new(MyDbContext);
+        using CategoryService service = new(NewDbContext);
         return await service.GetAllCategories();
     }
 
     public async Task<List<Transaction>> GetAllTransactions(TransactionParamPayload payload)
     {
-        using TransactionService service = new(MyDbContext);
+        using TransactionService service = new(NewDbContext);
         return await service.GetAllTransactions(payload);
     }
 

@@ -20,6 +20,7 @@ public class TransactionService : ServiceBase, IDisposable
             join cat in MyDbContext.AllCategories
                                     .AsNoTracking()
                     on transaction.CategoryId equals cat.Id
+            
             select StaticBuilder.BuildTransactionFromJoin(transaction, acct, cat);
 
         return await query.ToListAsync();
@@ -50,7 +51,19 @@ public class TransactionService : ServiceBase, IDisposable
                                     .AsNoTracking()
                     on transaction.CategoryId equals cat.Id
             
-            select StaticBuilder.BuildTransactionFromJoin(transaction, acct, cat);
+            join payDetails in MyDbContext.AllPayeesDetails
+                                    .AsNoTracking()
+                    on transaction.Details equals payDetails.Details
+                    into payDetailsGroup
+            from payDetails in payDetailsGroup.DefaultIfEmpty()
+
+            join pay in MyDbContext.AllPayees
+                                    .AsNoTracking()
+                    on payDetails.PayeeId equals pay.Id
+                    into payGroup
+            from pay in payGroup.DefaultIfEmpty()
+
+            select StaticBuilder.BuildTransactionFromJoin(transaction, acct, cat, pay);
 
         return await query.ToListAsync();
     }

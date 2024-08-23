@@ -32,6 +32,7 @@
     <PropertyColumn Property="@(p => p.AmountCurrency)" Title="Total Amount" Sortable="true" Width="8rem" Align="Align.End" Style="font-weight:bold"/>
     <PropertyColumn Property="@(p => p.CategoryName)" Title="Category" Sortable="true" Width="20rem"/>
     <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" />
+    <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" />
 </FluentDataGrid>
 
 <FluentPaginator State="@pagination" />

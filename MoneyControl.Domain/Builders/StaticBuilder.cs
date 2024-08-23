@@ -11,7 +11,15 @@ public static class StaticBuilder
         transaction.CategoryName = category?.Name ?? string.Empty;
 
         return transaction;
+    }
 
+    public static Transaction BuildTransactionFromJoin(TransactionEntity trans, AccountEntity account, 
+                                                        CategoryEntity category, PayeeEntity pay)
+    {
+        Transaction transaction = BuildTransactionFromJoin(trans, account, category);
+        transaction.PayeeName = pay?.Name ?? string.Empty;
+
+        return transaction;
     }
 
     public static Transaction BuildTransactionFromEntity(TransactionEntity entity)

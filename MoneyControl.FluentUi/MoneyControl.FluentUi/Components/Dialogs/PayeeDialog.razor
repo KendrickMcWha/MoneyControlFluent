@@ -63,6 +63,7 @@
 
             payee = new PayeeBuilder(payee)
                                         .WithName(Name)
+                                        .WithDisplayName(Name)
                                         .WithDefaultCategoryId(SelectedCategory.Id)
                                         .Build();
             Result result = await MyPayeeService.SavePayee(payee);

@@ -12,6 +12,11 @@ public class PayeeBuilder
         MyPayee.Name = value;
         return this;
     }
+    public PayeeBuilder WithDisplayName(string value)
+    {
+        MyPayee.DisplayName = value;
+        return this;
+    }
     public PayeeBuilder WithDefaultCategoryId(int value)
     {
         MyPayee.DefaultCategoryId = value;

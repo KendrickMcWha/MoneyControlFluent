@@ -20,7 +20,7 @@ public partial class TransactionsPage : ComponentBase
     private List<Category> AllCategories { get; set; } = new();
     private Account _selectedAccount;
     private Category _selectedCategory;
-    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, 1, 1); 
+    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1); 
     private DateTime? _selectedDateTo = DateTime.Now;
     private Account SelectedAccount { get { return _selectedAccount; } set { _selectedAccount = value; ReloadData(); } }
     private Category SelectedCategory { get { return _selectedCategory; } set { _selectedCategory = value; ReloadData(); } }

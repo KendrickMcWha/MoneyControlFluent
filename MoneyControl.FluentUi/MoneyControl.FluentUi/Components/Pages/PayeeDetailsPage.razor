@@ -73,6 +73,7 @@
     private async Task GetPayeeDetails()
     {
         var payees = await MyPayeeService.GetAllPayeeDetails();
+        payees = payees.Where(x => x.PayeeId == 0).ToList();
         AllPayeeDetails = payees.AsQueryable();
     }
     private async Task GetPayees()

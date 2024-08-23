@@ -17,6 +17,7 @@ public class Transaction
     public List<SubTransaction> AllSubTransactions { get; set; } = new();
     public string AccountName { get; set; }
     public string CategoryName { get; set; }
+    public string PayeeName { get; set; }
     public string AmountCurrency => Math.Abs(TotalAmount).ToString("C");
     public DateOnly BudgetDate { get; set; }
     public int BudgetDateInt => Convert.ToInt32(BudgetDateStr);

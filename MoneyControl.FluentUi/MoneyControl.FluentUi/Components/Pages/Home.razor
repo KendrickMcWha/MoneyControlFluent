@@ -3,3 +3,32 @@
 <PageTitle>Money Control</PageTitle>
 
 <h1>Money Control</h1>
+
+
+@code{
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            int a = 0;
+          //  a = a / 0;
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+}

@@ -49,6 +49,7 @@ public class PayeeService : ServiceBase, IDisposable
             MyDbContext.AllPayees.Add(entity);
         }
         entity.Name = payee.Name;
+        entity.DisplayName = payee.DisplayName;
         entity.DefaultCategoryId = payee.DefaultCategoryId;
 
         await MyDbContext.SaveChangesAsync();

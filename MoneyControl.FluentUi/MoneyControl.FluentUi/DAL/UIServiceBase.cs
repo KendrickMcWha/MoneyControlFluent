@@ -8,6 +8,7 @@ public abstract class UIServiceBase
     public IDbContextFactory<SqliteDbContext> MyDbContextFactory { get; set; } = null;
     protected SqliteDbContext MyDbContext { get; set; }
     protected Result SuccessResult = new Result(true, string.Empty);
+    protected SqliteDbContext NewDbContext => CreateDbContext();
 
     public UIServiceBase(IDbContextFactory<SqliteDbContext> factory)
     {  

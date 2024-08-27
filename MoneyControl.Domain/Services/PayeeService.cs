@@ -53,14 +53,12 @@ public class PayeeService : ServiceBase, IDisposable
         entity.DefaultCategoryId = payee.DefaultCategoryId;
 
         await MyDbContext.SaveChangesAsync();
-
-        return SuccessResult;
+                
+        return new Result(true, string.Empty, entity.Id);
     }
 
     public async Task<Result> SavePayeeDetails(PayeeDetails details)
     {
-
-
         PayeeDetailsEntity entity = MyDbContext.AllPayeesDetails.Where(x => x.Id == details.Id).FirstOrDefault();
         if (entity == null)
         {
@@ -88,5 +86,14 @@ public class PayeeService : ServiceBase, IDisposable
         return SuccessResult;
     }
 
+    public async Task<Result> SaveDetailsMakePayee(Payee payee, PayeeDetails payeeDetails)
+    {
+        Result payeeResult = await SavePayee(payee);
+        if (!payeeResult.Success) { return payeeResult; }
+
+        payeeDetails.PayeeId = Convert.ToInt32(payeeResult.Payload);
+
+        return await SavePayeeDetails(payeeDetails);
+    }
 
 }

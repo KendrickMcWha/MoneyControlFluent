@@ -4,6 +4,7 @@
 
 </FluentDialogHeader>
 <FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Outline" OnClick="MakePayee">Make Payee</FluentButton>
     <FluentSpacer />
     <FluentButton Appearance="Appearance.Accent" OnClick="SaveItem">Save</FluentButton>
     <FluentButton BackgroundColor="Crimson" Color="White" OnClick="Cancel">Cancel</FluentButton>
@@ -11,7 +12,7 @@
 
 <FluentDialogBody>
     <FluentTextField @bind-Value="Details" Label="Details" />
-    <FluentSelect Items="@AllPayees" TOption="Payee"
+    <FluentSelect Items="@AllPayees" TOption="Payee" Height="30rem"
                   @bind-SelectedOption="SelectedPayee"
                   OptionText="@(i => i.Name)" Label="Payee" />
 </FluentDialogBody>
@@ -32,7 +33,20 @@
         {
             Details = Content?.Details ?? string.Empty;
             AllPayees = await MyPayeeService.GetAllPayees();
+            AllPayees = AllPayees.OrderBy(x => x.Name).ToList();
+            Payee blank = new PayeeBuilder().WithName(string.Empty).Build();
+
             SelectedPayee = Content is null ? null : AllPayees.Where(x => x.Id == Content.PayeeId).FirstOrDefault();
+
+            if (SelectedPayee is null && Details != string.Empty)
+            {
+                SelectedPayee = AllPayees.Find(x => x.Name == Details);
+            }
+            if (SelectedPayee is null)
+            {
+                SelectedPayee = blank;
+            };
+            AllPayees.Insert(0, blank);
         }
         catch (Exception ex)
         {
@@ -48,7 +62,7 @@
             {
                 return;
             }
-            if (SelectedPayee is null)
+            if (SelectedPayee is null || SelectedPayee.Id == 0)
             {
                 return;
             }
@@ -65,6 +79,7 @@
                 MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Payee Details: {result.Message}");
                 return;
             }
+            await Dialog.CloseAsync(payeeDetails);
         }
         catch (Exception ex)
         {
@@ -72,4 +87,35 @@
         }
     }
 
+
+    private async void MakePayee()
+    {
+        try
+        {
+            Payee payee = new PayeeBuilder()
+                                .WithName(Details)
+                                .WithDisplayName(Details)
+                                .WithDefaultCategoryId(0)
+                                .Build();
+
+            PayeeDetails payeeDetails = new PayeeDetails()
+                {
+                    Id = Content?.Id ?? 0,
+                    Details = Details,
+                    PayeeId = 0
+                };
+
+            Result result = await MyPayeeService.SaveDetailsMakePayee(payee, payeeDetails);
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowOkMessage("Attention", $"Error saving Payee Details: {result.Message}");
+                return;
+            }
+            await Dialog.CloseAsync(payee);
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
 }

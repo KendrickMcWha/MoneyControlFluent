@@ -1,6 +1,7 @@
 ﻿@page "/payeedetails"
 <h3>Transaction Merchant Details</h3>
-
+<FluentSwitch @bind-Value=NoPayee Label="No Payee" />
+<p>@NoPayee</p>
 <FluentDataGrid ShowHover TGridItem="PayeeDetails" Items="AllPayeeDetails" Style="width:36rem" Pagination="@pagination">
     <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="20rem" />
     <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" Width="8rem" />
@@ -51,6 +52,8 @@
     private Payee SelectedMergePayee { get; set; }
     private bool IsLoading = true;
     private bool IsLoadingLink = true;
+    private bool _noPayee;
+    private bool NoPayee { get => _noPayee; set { _noPayee = value; ReloadPayeeDetails(); } }
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,13 +76,25 @@
     private async Task GetPayeeDetails()
     {
         var payees = await MyPayeeService.GetAllPayeeDetails();
-        payees = payees.Where(x => x.PayeeId == 0).ToList();
+        payees = payees.OrderBy(x => x.Details).ToList();
+        if (NoPayee)
+        {
+            payees = payees.Where(x => x.PayeeId == 0).ToList();
+        }
         AllPayeeDetails = payees.AsQueryable();
     }
     private async Task GetPayees()
     {
         var payees = await MyPayeeService.GetAllPayees();
         AllPayees = payees.OrderBy(x => x.Name).ToList();
+    }
+    private async void ReloadPayeeDetails()
+    {
+        await GetPayeeDetails();
+        await GetPayees();
+        Task.WaitAll();
+        await LinkPayeeDetails();
+        StateHasChanged();
     }
     private async Task LinkPayeeDetails()
     {
@@ -115,9 +130,9 @@
 
     private async void ShowPayeeDialog(PayeeDetails payee)
     {
-        string title = payee is null ? "New Payee" : "Edit Payee";
+        string title = payee is null ? "New Payee Details" : "Edit Payee Details";
 
-        var dialog = await MyDialog.ShowDialogAsync<PayeeDialog>(payee, new MoneyControl.FluentUi.Builders.DialogParametersBuilder()
+        var dialog = await MyDialog.ShowDialogAsync<PayeeDetailsDialog>(payee, new MoneyControl.FluentUi.Builders.DialogParametersBuilder()
                                                                                      .WithTitle(title)
                                                                                      .WithHeight(300)
                                                                                      .Build()

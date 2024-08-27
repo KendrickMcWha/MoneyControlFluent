@@ -11,4 +11,5 @@ public interface IUIPayeeService
     Task<Result> SavePayee(Payee payee);
     Task<Result> SavePayeeDetails(PayeeDetails details);
     Task<Result> DeletePayee(Payee payee);
+    Task<Result> SaveDetailsMakePayee(Payee payee, PayeeDetails details);
 }

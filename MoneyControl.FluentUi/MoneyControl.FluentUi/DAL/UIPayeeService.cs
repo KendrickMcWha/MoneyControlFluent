@@ -65,4 +65,10 @@ public class UIPayeeService : UIServiceBase, IDisposable, IUIPayeeService
         using PayeeService service = new(MyDbContext);
         return await service.SavePayeeDetails(details);
     }
+
+    public async Task<Result> SaveDetailsMakePayee(Payee payee, PayeeDetails details)
+    {
+        using PayeeService service = new(CreateDbContext());
+        return await service.SaveDetailsMakePayee(payee, details);
+    }
 }

@@ -34,8 +34,6 @@ public class TransactionService : ServiceBase, IDisposable
         int startDateInt = Convert.ToInt32( startDate.ToString("yyyyMMdd"));
         int endDateInt = Convert.ToInt32(endDate.ToString("yyyyMMdd"));
 
-        
-
         var query =
             from transaction in MyDbContext.AllTransactions
                                     .Where(x => skipFilterAcct || x.AccountId == payload.accountId)

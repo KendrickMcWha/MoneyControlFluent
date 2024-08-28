@@ -1,113 +1,91 @@
 ﻿@page "/spending"
 @using ApexCharts
+
 <h3>Spending</h3>
 
 <FluentStack Orientation="Microsoft.FluentUI.AspNetCore.Components.Orientation.Horizontal">
     <FluentDatePicker Label="Date From" @bind-Value="SelectedDateFrom" View="CalendarViews.Months" />
-    <FluentDatePicker Label="Date To" @bind-Value="SelectedDateTo" View="CalendarViews.Months"/>
-    <FluentSelect Items="@AllAccounts" TOption="Account"
-                  @bind-SelectedOption="SelectedAccount"
-                  OptionText="@(i => i.Name)" Label="Account"
-                  Height="20rem" />
+    <FluentDatePicker Label="Date To" @bind-Value="SelectedDateTo" View="CalendarViews.Months" />   
     <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="ReloadData" IconStart="@(new Icons.Regular.Size20.Search())">Load</FluentButton>
 </FluentStack>
 
-@foreach (var month in AllTransMonths)
-{
-    <FluentStack Orientation="Microsoft.FluentUI.AspNetCore.Components.Orientation.Horizontal">
-        <div>@month.MonthDate</div>        
-        <div>@month.TotalCredit</div>
-        <div>@month.TotalDebit</div>
-        <div>@month.TotalDiff</div>
-    </FluentStack>
-}
+<FluentTabs @bind-ValueId="@ActiveTabId">
+    <FluentTab Label="Month By Month Pie" Id="tabMonthByMonthPie">
+        @foreach (TransactionMonth month in AllTransMonths)
+        {
+             <ApexChart TItem="CategoryTransSpend" Title="@month.MonthDisplay"  >
+                <ApexPointSeries TItem="CategoryTransSpend"
+                                 Items="@month.AllCategorySpends"
+                                 Name="Spending"
+                                 SeriesType="SeriesType.Pie"
+                                 XValue="e => e.CatSpendDisplay"
+                                 YValue="e => e.TotalDebit"/>
+             </ApexChart> 
+        }
+    </FluentTab>
+    <FluentTab Label="Month By Month Bar" Id="tabMonthByMonthBar">
+        @foreach (TransactionMonth month in AllTransMonths)
+        {
+            <ApexChart TItem="CategoryTransSpend" Title="@month.MonthDisplay" @ref="ChartBar" Debug >
+                <ApexPointSeries TItem="CategoryTransSpend"
+                                 Items="@month.AllCategorySpends"
+                                 Name="Spending"
+                                 SeriesType="SeriesType.Bar"
+                                 XValue="e => e.CatSpendDisplay"
+                                 YValue="e => e.TotalDebit" />
+            </ApexChart>
+        }
+    </FluentTab>
+    <FluentTab Label="Month By Month Data" Id="tabMonthByMonthData">
+        @foreach (var month in AllTransMonths)
+        {
+            <div>@month.MonthDisplay</div>
 
-@if (AllTransMonths.Any())
-{
-    <ApexChart TItem="TransactionMonth"
-    Title="Monthly Income Expenses"
-    Options="ChartOptions"
-    Height="500">
+            @foreach (var catSpend in @month.AllCategorySpends)
+            {
+                <div>@catSpend.CatName @catSpend.TotalCredit @catSpend.TotalDebit</div>
+            }
+        }
+    </FluentTab>
+</FluentTabs>
+   
 
-        <ApexPointSeries TItem="TransactionMonth"
-        Items="AllTransMonths"
-        Name="Income"
-        XValue="e => e.MonthDisplay"
-        YValue="e => e.TotalCredit"
-        SeriesType="SeriesType.Bar"
-        ShowDataLabels />
 
-        <ApexPointSeries TItem="TransactionMonth"
-        Items="AllTransMonths"
-        Name="Expenses"
-        XValue="e => e.MonthDisplay"
-        YValue="e => e.TotalDebit"
-        SeriesType="SeriesType.Bar"
-        ShowDataLabels />
-    </ApexChart>
-}
 @code {
-    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [CascadingParameter] GlobalMessage MyGlobalMsg {get;set;}
     [Inject] public IUITransactionService MyTransactionService { get; set; }
-    private List<Account> AllAccounts { get; set; } = new();
+    private ApexChart<CategoryTransSpend> ChartPie;
+    private ApexChart<CategoryTransSpend> ChartBar;
     private List<TransactionMonth> AllTransMonths { get; set; } = new();
-    private ApexChartOptions<TransactionMonth> ChartOptions;
-    Account _selectedAccount;
-    Account SelectedAccount{ get; set; }
+    private List<Category> AllCategories { get; set; } = new();
     DateTime? SelectedDateFrom { get; set; }
     DateTime? SelectedDateTo { get; set; }
-
+    private string ActiveTabId;
 
     protected override async Task OnInitializedAsync()
     {
-
         SelectedDateTo = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-1);
-        SelectedDateFrom = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-2);
-
-        await GetAccounts();
-
-
-        ChartOptions = new ApexChartOptions<TransactionMonth>
-            {
-                Chart = new Chart
-                {
-                    Stacked = true,
-                },
-                PlotOptions = new PlotOptions
-                {
-                    Bar = new PlotOptionsBar
-                    {
-                        Horizontal = false,
-                        BorderRadius = 10,
-                        BorderRadiusApplication = BorderRadiusApplication.Around,
-                        BorderRadiusWhenStacked = BorderRadiusWhenStacked.All,                        
-                    }
-                },
-                Colors = new List<string> { "#5cb85c", "#d9534f" }
-            };
-
+        SelectedDateFrom = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-1);
+        await GetCategories();
     }
 
-    private async Task GetAccounts()
+    private async Task GetCategories()
     {
-        AllAccounts = await MyTransactionService.GetAllAccounts();
-        AllAccounts.Insert(0, new Account() { Id = 0, Name = "All", Type = string.Empty });
-        SelectedAccount = AllAccounts[0];
+        AllCategories = await MyTransactionService.GetAllCategories();
     }
 
     private async void ReloadData()
     {
-        if (SelectedAccount is null || SelectedAccount.Id < 1) return;
         DateTime tmp = (DateTime)SelectedDateTo;
 
         tmp = new DateTime(tmp.Year, tmp.Month, DateTime.DaysInMonth(tmp.Year, tmp.Month));
 
-        TransactionParamPayload payload = new(SelectedAccount.Id, 0,  
-                                                DateOnly.FromDateTime((DateTime)SelectedDateFrom), 
+        TransactionParamPayload payload = new(0, 0,
+                                                DateOnly.FromDateTime((DateTime)SelectedDateFrom),
                                                 DateOnly.FromDateTime(tmp)
                                                 );
         var allTrans = await MyTransactionService.GetAllTransactions(payload);
-
+        allTrans = allTrans.Where(x => x.TransType == -1).ToList();
         AllTransMonths.Clear();
         foreach (var trans in allTrans)
         {
@@ -124,7 +102,13 @@
         }
 
         AllTransMonths.ForEach(x => x.BuildBalances());
+        AllTransMonths.ForEach(x => x.BuildCategorySpends(AllCategories));
+
+        if (ChartPie is not null)
+        {
+            await ChartPie?.RenderAsync();
+            await ChartBar?.RenderAsync();
+        }
 
     }
-
 }

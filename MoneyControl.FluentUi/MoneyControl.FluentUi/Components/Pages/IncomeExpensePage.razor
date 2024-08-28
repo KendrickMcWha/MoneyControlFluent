@@ -1,0 +1,285 @@
+﻿@page "/incomeexpense"
+@using ApexCharts
+@using FluentUi
+
+<h3>Income Expense</h3>
+
+<FluentStack Orientation="Microsoft.FluentUI.AspNetCore.Components.Orientation.Horizontal">
+    <FluentDatePicker Label="Date From" @bind-Value="SelectedDateFrom" View="CalendarViews.Months" />
+    <FluentDatePicker Label="Date To" @bind-Value="SelectedDateTo" View="CalendarViews.Months"/>
+    <FluentSelect Items="@AllAccounts" TOption="Account"
+                  @bind-SelectedOption="SelectedAccount"
+                  OptionText="@(a => a.Name)" 
+                  Label="Account"
+                  Height="20rem" />
+    <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="ReloadData" IconStart="@(new Icons.Regular.Size20.Search())">Load</FluentButton>
+</FluentStack>
+
+<FluentTabs @bind-Value="@ActiveTabId" OnTabChange="HandleOnTabChange">
+    <FluentTab Label="Stack" Id="tabStack">
+        @if (AllTransMonths.Any())
+        {
+             <ApexChart TItem="TransactionMonth"
+                Title="Monthly Income Expenses"
+                Options="ChartOptionsStack"
+                Height="500"
+                @ref=ChartStack Debug>
+
+                <ApexPointSeries TItem="TransactionMonth"
+                    Items="AllTransMonths"
+                    Name="Income"
+                    XValue="e => e.MonthDisplay"
+                    YValue="e => e.TotalCredit"
+                    SeriesType="SeriesType.Bar"
+                    ShowDataLabels />
+
+                <ApexPointSeries TItem="TransactionMonth"
+                    Items="AllTransMonths"
+                    Name="Expenses"
+                    XValue="e => e.MonthDisplay"
+                    YValue="e => e.TotalDebit"
+                    SeriesType="SeriesType.Bar"
+                    ShowDataLabels />
+            </ApexChart>
+        }
+    </FluentTab>
+    <FluentTab Label="Horizontal" Id="tabHorizontal">
+        @if (AllTransMonths.Any())
+        {
+             <ApexChart TItem="TransactionMonth"
+                Title="Monthly Income Expenses"
+                Options="ChartOptionsHorizontal"
+                Height="500"
+                @ref=ChartHorizontal Debug>
+
+                <ApexPointSeries TItem="TransactionMonth"
+                    Items="AllTransMonths"
+                    Name="Income"
+                    XValue="e => e.MonthDisplay"
+                    YValue="e => e.TotalCredit"
+                    SeriesType="SeriesType.Bar"
+                    ShowDataLabels />
+
+                <ApexPointSeries TItem="TransactionMonth"
+                    Items="AllTransMonths"
+                    Name="Expenses"
+                    XValue="e => e.MonthDisplay"
+                    YValue="e => e.TotalDebit"
+                    SeriesType="SeriesType.Bar"
+                    ShowDataLabels />
+        
+            </ApexChart>
+        }
+    </FluentTab>
+    <FluentTab Label="Basic" Id="tabBasic">
+        @if(AllTransMonths.Any())
+        {
+             <ApexChart TItem="TransactionMonth"
+                Title="Monthly Income Expenses"
+                Height="500"
+                @ref=ChartBasic Debug>
+
+            <ApexPointSeries TItem="TransactionMonth"
+                Items="AllTransMonths"
+                Name="Income"
+                XValue="e => e.MonthDisplay"
+                YValue="e => e.TotalCredit"
+                SeriesType="SeriesType.Bar"
+                ShowDataLabels />
+
+            <ApexPointSeries TItem="TransactionMonth"
+                Items="AllTransMonths"
+                Name="Expenses"
+                XValue="e => e.MonthDisplay"
+                YValue="e => e.TotalDebit"
+                SeriesType="SeriesType.Bar"
+                ShowDataLabels />
+        
+            </ApexChart>   
+        }
+    </FluentTab>
+   
+    <FluentTab Label="Line" Id="tabLine">
+        @if(AllTransMonths.Any())
+        {
+            <ApexChart TItem="TransactionMonth"
+                        title="Monthly Income Expenses"
+                        Height="500"
+                        @ref="ChartLine" Debug>
+                <ApexPointSeries TItem="TransactionMonth"
+                        Items="AllTransMonths"
+                        Name="Income"
+                        XValue="e => e.MonthDisplay"
+                        YValue="e => e.TotalCredit"
+                        SeriesType="SeriesType.Line"
+                        ShowDataLabels />
+                <ApexPointSeries TItem="TransactionMonth"
+                        Items="AllTransMonths"
+                        Name="Expenses"
+                        XValue="e => e.MonthDisplay"
+                        YValue="e => e.TotalDebit"
+                        SeriesType="SeriesType.Line"
+                        ShowDataLabels />
+            </ApexChart>
+        }
+    </FluentTab>
+    <FluentTab Label="Range" Id="tabRange">
+        @if(AllTransMonths.Any())
+        {
+            <ApexChart TItem="TransactionMonth"
+                        Title="Monthly Income Expenses"
+                        Options="ChartOptionsRange"
+                        @ref=ChartRange>
+                <ApexRangeAreaSeries TItem="TransactionMonth"
+                        Items="AllTransMonths"
+                        Name="Range"
+                        XValue="e => e.MonthDisplay"
+                        Top="e => e.TotalCredit"
+                        Bottom="e => e.TotalDebit" />
+
+            </ApexChart>
+        }
+    </FluentTab>
+    <FluentTab Label="Range" Id="tabArea">
+        @if (AllTransMonths.Any())
+        {
+            @if (AllTransMonths.Any())
+            {
+                <ApexChart TItem="TransactionMonth"
+                           title="Monthly Income Expenses"
+                           Height="500"
+                           @ref="ChartArea" Debug>
+                    <ApexPointSeries TItem="TransactionMonth"
+                                     Items="AllTransMonths"
+                                     Name="Income"
+                                     XValue="e => e.MonthDisplay"
+                                     YValue="e => e.TotalCredit"
+                                     SeriesType="SeriesType.Area"
+                                     ShowDataLabels />
+                    <ApexPointSeries TItem="TransactionMonth"
+                                     Items="AllTransMonths"
+                                     Name="Expenses"
+                                     XValue="e => e.MonthDisplay"
+                                     YValue="e => e.TotalDebit"
+                                     SeriesType="SeriesType.Area"
+                                     ShowDataLabels />
+                </ApexChart>
+            }
+        }
+    </FluentTab>
+    <FluentTab Label="Data" Id="tabData">
+        @foreach (var month in AllTransMonths)
+        {
+            <FluentStack Orientation="Microsoft.FluentUI.AspNetCore.Components.Orientation.Horizontal">
+                <div>@month.MonthDate</div>
+                <div>@month.TotalCredit</div>
+                <div>@month.TotalDebit</div>
+                <div>@month.TotalDiff</div>
+            </FluentStack>
+        }
+    </FluentTab>
+</FluentTabs>
+
+
+
+
+
+
+
+@code {
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUITransactionService MyTransactionService { get; set; }
+    private List<Account> AllAccounts { get; set; } = new();
+    private List<TransactionMonth> AllTransMonths { get; set; } = new();
+    private ApexChart<TransactionMonth> ChartStack;
+    private ApexChart<TransactionMonth> ChartHorizontal;
+    private ApexChart<TransactionMonth> ChartBasic;
+    private ApexChart<TransactionMonth> ChartLine;
+    private ApexChart<TransactionMonth> ChartRange;
+    private ApexChart<TransactionMonth> ChartArea;
+    private ApexChartOptions<TransactionMonth> ChartOptionsStack { get; set; }
+    private ApexChartOptions<TransactionMonth> ChartOptionsHorizontal { get; set; }
+    private ApexChartOptions<TransactionMonth> ChartOptionsLine{ get; set; }
+    private ApexChartOptions<TransactionMonth> ChartOptionsRange { get; set; }
+    private FluentTab? changedTo;
+    Account _selectedAccount;
+    Account SelectedAccount{ get; set; }
+    DateTime? SelectedDateFrom { get; set; }
+    DateTime? SelectedDateTo { get; set; }
+    private string ActiveTabId { get; set; } = "tabStack";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        SelectedDateTo = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-1);
+        SelectedDateFrom = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-2);
+
+        await GetAccounts();
+
+        ChartOptionsStack = ApexChartOptionsBuilder.BuildTransMonthOptionsStack();
+        ChartOptionsHorizontal = ApexChartOptionsBuilder.BuildTransMonthOptionsHorizontal();
+        ChartOptionsLine = ApexChartOptionsBuilder.BuildTransMonthOptionsLine();
+        ChartOptionsRange = ApexChartOptionsBuilder.BuildTransMonthOptionsRange();
+
+    }
+
+    private async Task GetAccounts()
+    {
+        AllAccounts = await MyTransactionService.GetAllAccounts();
+        AllAccounts.Insert(0, new Account() { Id = 0, Name = "All", Type = string.Empty });
+        SelectedAccount = AllAccounts[0];
+    }
+
+    private async void ReloadData()
+    {
+        if (SelectedAccount is null || SelectedAccount.Id < 1)
+        {
+            MyGlobalMsg.ShowInfoMessage("Attention", "Account must be selected.");
+            return;
+        }
+
+
+        DateTime tmp = (DateTime)SelectedDateTo;
+
+        tmp = new DateTime(tmp.Year, tmp.Month, DateTime.DaysInMonth(tmp.Year, tmp.Month));
+
+        TransactionParamPayload payload = new(SelectedAccount.Id, 0,  
+                                                DateOnly.FromDateTime((DateTime)SelectedDateFrom), 
+                                                DateOnly.FromDateTime(tmp)
+                                                );
+        var allTrans = await MyTransactionService.GetAllTransactions(payload);
+
+        AllTransMonths.Clear();
+        foreach (var trans in allTrans)
+        {
+            DateOnly transMonthDate = new DateOnly(trans.BudgetDate.Year, trans.BudgetDate.Month, 1);
+
+            int type = trans.TransType < 0 ? -1 : 1;
+
+            TransactionMonth transactionMonth = AllTransMonths.Find(x => x.MonthDate == transMonthDate);
+            if (transactionMonth is null)
+            {
+                AllTransMonths.Add(transactionMonth = new(transMonthDate));
+            }
+            transactionMonth.AllTransactions.Add(trans);
+        }
+
+        AllTransMonths.ForEach(x => x.BuildBalances());
+
+        if (ChartStack is not null)
+        {
+            await ChartStack?.RenderAsync();
+            await ChartHorizontal?.RenderAsync();
+            await ChartBasic?.RenderAsync();
+            await ChartLine?.RenderAsync();
+            await ChartRange?.RenderAsync();
+            await ChartArea?.RenderAsync();
+        }
+    }
+
+    private async void HandleOnTabChange(FluentTab tab)
+    {
+        //changedTo = tab;
+    }
+
+}

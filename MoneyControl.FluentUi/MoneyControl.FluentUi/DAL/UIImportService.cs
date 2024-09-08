@@ -28,7 +28,7 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
         {
             string details = fileLine.Details;
             Payee payee = null;
-            var payeeDetails = allPayeeDetails.Find(x => x.PayeeName == details);
+            var payeeDetails = allPayeeDetails.Find(x => x.Details == details);
             if (payeeDetails is not null)
             {
                 payee = allPayees.Find(x => x.Id == payeeDetails.PayeeId);                
@@ -46,7 +46,17 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
             }
         }
 
+    }
 
 
+    public async Task<List<Payee>> GetAllPayees()
+    {        
+        using PayeeService service = new(CreateDbContext());
+        return await service.GetAllPayees();
+    }
+    public async Task<List<Category>> GetAllCategories()
+    {
+        using CategoryService service = new(CreateDbContext());
+        return await service.GetAllCategories();
     }
 }

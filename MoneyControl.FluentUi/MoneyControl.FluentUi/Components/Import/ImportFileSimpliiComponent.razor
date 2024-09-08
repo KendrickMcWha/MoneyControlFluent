@@ -37,6 +37,7 @@
 </FluentStack>
 
 
+
 @if (AllFileLines.Any())
 {
     <FluentDataGrid ShowHover TGridItem="ImportFileLineRecord" Items="AllFileLines" Pagination="@pagination">
@@ -48,17 +49,24 @@
         <TemplateColumn Title="Funds In" Sortable="true" Width="8rem" Align="Align.End">
             <span>@(decimal.TryParse(context.FundsIn, out var amount2) ? $"{amount2:C}" : context.FundsIn)</span>
         </TemplateColumn>
-        <PropertyColumn Property="@(p => p.DefaultCatId)" Title="CatId" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DefaultCatId)" Title="CatId" Sortable="true" Width="4rem" />
         <PropertyColumn Property="@(p => p.DefaultCat)" Title="Default Category" Sortable="true" />
-        <PropertyColumn Property="@(p => p.DefaultPayId)" Title="PayeeId" Sortable="true" />
+        <PropertyColumn Property="@(p => p.DefaultPayId)" Title="PayeeId" Sortable="true" Width="4rem"/>
         <PropertyColumn Property="@(p => p.DefaultPay)" Title="Default Payee" Sortable="true" />
+        <TemplateColumn Title="Actions">
+            <FluentButton OnClick="@(() => OpenTransactionDialog(context))">Assign</FluentButton>            
+        </TemplateColumn>
     </FluentDataGrid>
     <FluentPaginator State="@pagination" />
+    <FluentStack>
+        <FluentButton Appearance="Appearance.Accent" OnClick="ImportData">Import</FluentButton>
+    </FluentStack>
 }
 
 @code {
     [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
     [Inject] public IUIImportService MyImportService { get; set; }
+    [Inject] public IDialogService MyDialog { get; set; }
     [Parameter] public Account MyAccount{ get; set; }
     public IQueryable<ImportFileLineRecord> AllFileLines { get; set; }
     private PaginationState pagination = new PaginationState { ItemsPerPage = 15 };
@@ -79,22 +87,29 @@
 
     private async Task OnProgressChangeAsync(FluentInputFileEventArgs file)
     {
-        progressPercent = file.ProgressPercent;
-        progressTitle = file.ProgressTitle;
-
-        // To cancel?
-        file.IsCancelled = IsCanceled;
-
-        // New file
-        if (!Files.ContainsKey(file.Index))
+        try
         {
-            var localFile = Path.GetTempFileName() + file.Name;
-            Files.Add(file.Index, localFile);
-        }
+            progressPercent = file.ProgressPercent;
+            progressTitle = file.ProgressTitle;
 
-        var lines = await ImportAgent.LoadImportFile(MyAccount.Id, file, Files);
-        MyImportService.SetDefaultCategories(lines);
-        AllFileLines = lines.AsQueryable();
+            // To cancel?
+            file.IsCancelled = IsCanceled;
+
+            // New file
+            if (!Files.ContainsKey(file.Index))
+            {
+                var localFile = Path.GetTempFileName() + file.Name;
+                Files.Add(file.Index, localFile);
+            }
+
+            var lines = await ImportAgent.LoadImportFile(MyAccount.Id, file, Files);
+            MyImportService.SetDefaultCategories(lines);
+            AllFileLines = lines.AsQueryable();
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
     }
 
     private void OnCompleted(IEnumerable<FluentInputFileEventArgs> files)
@@ -109,4 +124,26 @@
         }
     }
 
+    private void ImportData()
+    {
+
+    }
+
+    private async void OpenTransactionDialog(ImportFileLineRecord record)
+    {
+        
+        string title = "Assign Transaction";
+        var dialog = await MyDialog.ShowDialogAsync<TransactionAssignDialog>(record, new DialogParametersBuilder()
+                                                                                        .WithTitle(title)
+                                                                                        .WithHeight(400)
+                                                                                        .Build()
+        );
+        
+
+        var result = await dialog.Result;
+        if(!result.Cancelled)
+        {
+            
+        }
+    }
 }

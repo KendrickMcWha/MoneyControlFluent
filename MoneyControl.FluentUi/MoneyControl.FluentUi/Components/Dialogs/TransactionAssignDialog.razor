@@ -1,0 +1,84 @@
+﻿@implements IDialogContentComponent<ImportFileLineRecord>
+
+<FluentDialogHeader>
+
+</FluentDialogHeader>
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent" OnClick="SaveItem">Save</FluentButton>
+    <FluentButton BackgroundColor="Crimson" Color="White" OnClick="Cancel">Cancel</FluentButton>
+</FluentDialogFooter>
+
+<FluentDialogBody>
+    
+    <FluentTextField @bind-Value="TransDetails" Label="Details" Style="width:28rem;margin-bottom:1rem" ReadOnly />
+    
+    <FluentStack Style="margin-bottom:0.5rem">
+        <FluentLabel style="width:5rem" >Category</FluentLabel>
+        <FluentSelect Items="@AllCategories" TOption="Category" Height="30rem"
+                        @bind-SelectedOption="SelectedCategory"
+                        OptionText="@(i => i.Name)" />
+        <FluentSwitch @bind-Value=DefCategory Label="Default" />
+    </FluentStack>
+    @if (!ShowMakePayee)
+    {
+        <FluentStack>
+            <FluentLabel style="width:5rem">Payee</FluentLabel>
+        <FluentSelect Items="@AllPayees" TOption="Payee" Height="30rem"
+                        @bind-SelectedOption="SelectedPayee"
+                        OptionText="@(i => i.Name)" />
+    </FluentStack>
+    }
+    <br />
+    <FluentStack Orientation="Orientation.Vertical">
+        <FluentSwitch @bind-Value=ShowMakePayee Label="New Payee" />
+        @if(ShowMakePayee)
+        {
+            <FluentTextField @bind-Value="NewPayeeName" Style="width:20rem"/>
+        }
+    </FluentStack>
+    
+</FluentDialogBody>
+
+
+@code {
+    [CascadingParameter] public FluentDialog? Dialog { get; set; } = default!;
+    [CascadingParameter] GlobalMessage MyGlobalMsg { get; set; }
+    [Inject] public IUIImportService MyImportService { get; set; }
+    [Parameter] public ImportFileLineRecord Content { get; set; }
+
+
+    private List<Category> AllCategories { get; set; }
+    private List<Payee> AllPayees { get; set; }
+    private Category SelectedCategory { get; set; }
+    private Payee SelectedPayee { get; set; }
+    private bool ShowMakePayee { get; set; }
+    private string NewPayeeName { get; set; }
+    private string TransDetails { get; set; }
+    private bool DefCategory{ get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            AllPayees = await MyImportService.GetAllPayees();
+            AllCategories = await MyImportService.GetAllCategories();
+
+            AllPayees = AllPayees.OrderBy(x => x.Name).ToList();
+            AllCategories = AllCategories.OrderBy(x => x.Name).ToList();
+            AllPayees.Insert(0, new(){Id = 0, Name=string.Empty});
+
+            TransDetails = Content.Details;
+            NewPayeeName = Content.Details;
+
+            SelectedCategory = AllCategories.Find(x => x.Name == "Unassigned");
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
+    }
+
+    public async void Cancel() => await Dialog.CancelAsync();
+    private async void SaveItem()
+    { }
+}

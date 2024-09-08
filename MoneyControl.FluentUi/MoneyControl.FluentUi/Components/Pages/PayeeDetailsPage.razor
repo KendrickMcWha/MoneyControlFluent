@@ -1,10 +1,13 @@
 ﻿@page "/payeedetails"
 <h3>Transaction Merchant Details</h3>
 <FluentSwitch @bind-Value=NoPayee Label="No Payee" />
+<FluentTextField @bind-Value=SearchText Label="Search" />
 <p>@NoPayee</p>
 <FluentDataGrid ShowHover TGridItem="PayeeDetails" Items="AllPayeeDetails" Style="width:36rem" Pagination="@pagination">
-    <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="20rem" />
-    <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" Width="8rem" />
+    <PropertyColumn Property="@(p => p.Id)" Title="ID" Sortable="true" Width="4rem" />
+    <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" Width="22rem" />
+    <PropertyColumn Property="@(p => p.PayeeId)" Title="Payee Id" Sortable="true" Width="5rem" />
+    <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" Width="20rem" />
     <TemplateColumn Width="6rem">
         <FluentButton OnClick="@(() => EditPayee(context))" IconStart="@(new Icons.Regular.Size20.EditLineHorizontal3())" />
         <FluentButton style="--accent-fill-rest: crimson"
@@ -54,6 +57,8 @@
     private bool IsLoadingLink = true;
     private bool _noPayee;
     private bool NoPayee { get => _noPayee; set { _noPayee = value; ReloadPayeeDetails(); } }
+    private string searchText = string.Empty;
+    private string SearchText { get => searchText; set { searchText = value; SearchTextChange(); } }
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,6 +86,12 @@
         {
             payees = payees.Where(x => x.PayeeId == 0).ToList();
         }
+
+        if (SearchText != string.Empty)
+        {
+            payees = payees.Where(x => x.Details.Contains(SearchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         AllPayeeDetails = payees.AsQueryable();
     }
     private async Task GetPayees()
@@ -190,8 +201,14 @@
                 details = new() { Details = transDetails.Details };
                 MyPayeeService.SavePayeeDetails(details);
             }
-           
+
         }
+    }
+
+    private void SearchTextChange()
+    {
+        GetPayeeDetails();
+        LinkPayeeDetails();
     }
 
 }

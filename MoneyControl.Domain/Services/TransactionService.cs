@@ -111,5 +111,9 @@ public class TransactionService : ServiceBase, IDisposable
         return await query.ToListAsync();
     }
 
+    public async Task<Result> SaveImportTransactions(List<ImportTransactionRecord> allFileLines)
+    {
+        return new Result(false, string.Empty);
+    }
 
 }

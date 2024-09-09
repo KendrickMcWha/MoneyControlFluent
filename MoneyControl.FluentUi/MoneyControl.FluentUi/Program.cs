@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components.Components.Tooltip;
 using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Extension;
 using MoneyControl.FluentUi.Components;
@@ -26,6 +27,8 @@ builder.Services.AddTransient<IUIPayeeService, UIPayeeService>();
 builder.Services.AddTransient<IUITransactionService, UITransactionService>();
 builder.Services.AddTransient<IUITransactionTypeService, UITransactionTypeService>();
 builder.Services.AddTransient<IUIImportService, UIImportService>();
+
+builder.Services.AddScoped<ITooltipService, TooltipService>();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(theme: SerilogTheme.Colored)

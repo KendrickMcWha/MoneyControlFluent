@@ -13,4 +13,5 @@ public interface IUIImportService
     Task<Result> CreatePayee(Payee payee);
     Task<Payee> GetPayee(int id);
     Task<Result> SavePayeeDetails(PayeeDetails payeeDetails);
+    Task<Result> SaveImportTransaction(List<ImportFileLineRecord> allFileLines);
 }

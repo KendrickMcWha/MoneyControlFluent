@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MoneyControl.FluentUi.DAL;
 
@@ -79,5 +80,26 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
     {
         using PayeeService payeeService = new(CreateDbContext());
         return await payeeService.SavePayeeDetails(payeeDetails);
+    }
+    public async Task<Result> SaveImportTransaction(List<ImportFileLineRecord> allFileLines)
+    {
+        List<ImportTransactionRecord> allImportTrans = new();
+        allFileLines.ForEach(x =>
+                                allImportTrans.Add(new ImportTransactionRecord(x.line,
+                                    x.data,
+                                    x.Date,
+                                    x.Details,
+                                    x.FundsOut,
+                                    x.FundsIn
+                                ){
+                                    DefaultCat = x.DefaultCat,
+                                    DefaultPay = x.DefaultPay,
+                                    DefaultCatId = x.DefaultCatId,
+                                    DefaultPayId = x.DefaultPayId
+                                }
+                                
+        ));
+        using TransactionService transactionService = new(CreateDbContext());
+        return await transactionService.SaveImportTransactions(allImportTrans);
     }
 }

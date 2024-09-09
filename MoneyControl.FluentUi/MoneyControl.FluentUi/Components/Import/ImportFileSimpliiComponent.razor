@@ -54,7 +54,9 @@
         <PropertyColumn Property="@(p => p.DefaultPayId)" Title="PayeeId" Sortable="true" Width="4rem"/>
         <PropertyColumn Property="@(p => p.DefaultPay)" Title="Default Payee" Sortable="true" />
         <TemplateColumn Title="Actions">
-            <FluentButton OnClick="@(() => OpenTransactionDialog(context))">Assign</FluentButton>            
+            @* <FluentButton OnClick="@(() => OpenTransactionDialog(context))">Assign</FluentButton>             *@
+            <FluentButton Id="AssignBtn" IconStart="@(new Icons.Regular.Size24.PuzzleCube())" OnClick="@(() => OpenTransactionDialog(context))"/>
+            <FluentTooltip Anchor="AssignBtn" Delay="300" Position="TooltipPosition.Top" >Assign</FluentTooltip>
         </TemplateColumn>
     </FluentDataGrid>
     <FluentPaginator State="@pagination" />
@@ -126,7 +128,7 @@
 
     private void ImportData()
     {
-
+        var Result = await MyImportService.SaveImportTransactions()
     }
 
     private async void OpenTransactionDialog(ImportFileLineRecord record)

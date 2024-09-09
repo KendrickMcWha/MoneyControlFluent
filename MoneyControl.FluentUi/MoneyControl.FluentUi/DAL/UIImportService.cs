@@ -59,4 +59,25 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
         using CategoryService service = new(CreateDbContext());
         return await service.GetAllCategories();
     }
+
+    public async Task<Result> CreatePayee(Payee payee)
+    {
+        using PayeeService service = new(CreateDbContext());
+        return await service.SavePayee(payee);
+    }
+    public async Task<Payee> GetPayee(int id)
+    {
+        using PayeeService payeeService = new(CreateDbContext());
+        return await payeeService.GetPayeeWithId(id);
+    }
+    public async Task<PayeeDetails> GetPayeeDetails(string value)
+    {
+        using PayeeService payeeService=new(CreateDbContext());
+        return await payeeService.GetPayeeDetails(value);
+    }
+    public async Task<Result> SavePayeeDetails(PayeeDetails payeeDetails)
+    {
+        using PayeeService payeeService = new(CreateDbContext());
+        return await payeeService.SavePayeeDetails(payeeDetails);
+    }
 }

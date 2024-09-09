@@ -7,6 +7,15 @@ public class PayeeService : ServiceBase, IDisposable
     public PayeeService(SqliteDbContext dbContext) : base(dbContext) { }
     public void Dispose() => MyDbContext.Dispose();
 
+    public async Task<Payee> GetPayeeWithId(int  id)
+    {
+        var query =
+            from payee in MyDbContext.AllPayees
+                                        .Where(x => x.Id == id)
+                                        .AsNoTracking() 
+            select StaticBuilder.BuildPayeeFromEntity(payee);
+        return await query.FirstOrDefaultAsync();
+    }
     public async Task<List<Payee>> GetAllPayees()
     {
         var query = 
@@ -27,13 +36,20 @@ public class PayeeService : ServiceBase, IDisposable
     {
         var query =
             from details in MyDbContext.AllPayeesDetails.AsNoTracking()
-                //join payee in MyDbContext.AllPayees.AsNoTracking()
-                //    on details.PayeeId equals payee.Id
             select StaticBuilder.BuildPayeeDetails(details, null);//,  payee);
 
         return await query.ToListAsync();
     }
+    public async Task<PayeeDetails> GetPayeeDetails(string value)
+    {
+        var query =
+            from details in MyDbContext.AllPayeesDetails
+                                        .Where(x => x.Details == value)
+                                        .AsNoTracking()
+            select StaticBuilder.BuildPayeeDetails(details, null);
 
+        return await query.FirstOrDefaultAsync();
+    }
 
     public async Task<Result> SavePayee(Payee payee)
     {

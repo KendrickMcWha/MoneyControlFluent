@@ -49,8 +49,10 @@
 
     private List<Category> AllCategories { get; set; }
     private List<Payee> AllPayees { get; set; }
+    private List<PayeeDetails> AllPayeeDetails { get; set; }
     private Category SelectedCategory { get; set; }
     private Payee SelectedPayee { get; set; }
+    private PayeeDetails MyPayeeDetails { get; set; }
     private bool ShowMakePayee { get; set; }
     private string NewPayeeName { get; set; }
     private string TransDetails { get; set; }
@@ -60,17 +62,34 @@
     {
         try
         {
-            AllPayees = await MyImportService.GetAllPayees();
-            AllCategories = await MyImportService.GetAllCategories();
-
-            AllPayees = AllPayees.OrderBy(x => x.Name).ToList();
-            AllCategories = AllCategories.OrderBy(x => x.Name).ToList();
-            AllPayees.Insert(0, new(){Id = 0, Name=string.Empty});
 
             TransDetails = Content.Details;
-            NewPayeeName = Content.Details;
+            NewPayeeName = TransDetails;
 
+            AllPayees = await MyImportService.GetAllPayees();
+            AllPayees = AllPayees.OrderBy(x => x.Name).ToList();
+            AllPayees.Insert(0, new(){Id = 0, Name=string.Empty});
+
+            AllCategories = await MyImportService.GetAllCategories();
+            AllCategories = AllCategories.OrderBy(x => x.Name).ToList();
             SelectedCategory = AllCategories.Find(x => x.Name == "Unassigned");
+
+            MyPayeeDetails = await MyImportService.GetPayeeDetails(TransDetails);
+            if(MyPayeeDetails is not null)
+            {
+                var payee = AllPayees.Find(x => x.Id == MyPayeeDetails.PayeeId);
+                if (payee is not null)
+                {
+                    MyPayeeDetails.PayeeName = payee.Name;
+                    SelectedPayee = payee;
+                    var category = AllCategories.Find(x => x.Id == payee.DefaultCategoryId);
+                    if (category is not null)
+                    {
+                        SelectedCategory = category;
+                    }
+                }
+
+            }            
         }
         catch (Exception ex)
         {
@@ -80,5 +99,59 @@
 
     public async void Cancel() => await Dialog.CancelAsync();
     private async void SaveItem()
-    { }
+    {
+
+        if (SelectedCategory is null) { return; }
+        if (!ShowMakePayee && SelectedPayee is null) return;
+
+        if (ShowMakePayee && NewPayeeName == string.Empty) return;
+
+
+        if (!ShowMakePayee )
+        {
+            Content.DefaultPayId = SelectedPayee.Id;
+            Content.DefaultPay = SelectedPayee.Name;
+        }
+        else
+        {
+            Payee newPayee = new PayeeBuilder()
+                                .WithName(NewPayeeName)
+                                .WithDisplayName(NewPayeeName)
+                                .Build();
+            if (DefCategory)
+            {
+                newPayee.DefaultCategoryId = SelectedCategory.Id;
+            }
+
+            Result result = await MyImportService.CreatePayee(newPayee);
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowWarningMessage("Save Error", result.Message);
+                return;
+            }
+            newPayee = await MyImportService.GetPayee(SelectedPayee.Id);
+            AllPayees.Add(newPayee);
+            Content.DefaultPayId = newPayee.Id;
+            Content.DefaultPay = newPayee.Name;
+            if (MyPayeeDetails is null)
+            {
+                PayeeDetails newDetails = new PayeeDetailsBuilder()
+                                                .WithDetails(TransDetails)
+                                                .Build();                                              
+
+                var saveDetailsResult = await MyImportService.SavePayeeDetails(newDetails);
+                if (!saveDetailsResult.Success)
+                {
+                    MyGlobalMsg.ShowWarningMessage("Save Error", saveDetailsResult.Message);
+                    return;
+                }
+            }
+
+        }
+        Content.DefaultCatId = SelectedCategory.Id;
+        Content.DefaultCat = SelectedCategory.Name;
+
+        await Dialog.CloseAsync(Content);
+    
+    }
 }

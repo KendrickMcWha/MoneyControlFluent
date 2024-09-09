@@ -131,19 +131,19 @@
 
     private async void OpenTransactionDialog(ImportFileLineRecord record)
     {
-        
+
         string title = "Assign Transaction";
         var dialog = await MyDialog.ShowDialogAsync<TransactionAssignDialog>(record, new DialogParametersBuilder()
                                                                                         .WithTitle(title)
                                                                                         .WithHeight(400)
                                                                                         .Build()
         );
-        
+
 
         var result = await dialog.Result;
         if(!result.Cancelled)
         {
-            
+            StateHasChanged();
         }
     }
 }

@@ -87,10 +87,13 @@ public class UIImportService : UIServiceBase, IDisposable, IUIImportService
         allFileLines.ForEach(x =>
                                 allImportTrans.Add(new ImportTransactionRecord(x.line,
                                     x.data,
+                                    x.Account,
                                     x.Date,
+                                    x.DateAsInt,
                                     x.Details,
                                     x.FundsOut,
-                                    x.FundsIn
+                                    x.FundsIn,
+                                    x.TransType
                                 ){
                                     DefaultCat = x.DefaultCat,
                                     DefaultPay = x.DefaultPay,

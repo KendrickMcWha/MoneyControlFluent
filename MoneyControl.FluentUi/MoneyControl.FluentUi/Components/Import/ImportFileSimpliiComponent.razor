@@ -126,9 +126,22 @@
         }
     }
 
-    private void ImportData()
+    private async void ImportData()
     {
-        var Result = await MyImportService.SaveImportTransactions()
+        try
+        {
+            var result = await MyImportService.SaveImportTransaction(AllFileLines.ToList());
+            if (!result.Success)
+            {
+                MyGlobalMsg.ShowWarningMessage("Attention", result.Message);
+                return;
+            }
+            MyGlobalMsg.ShowOkMessage("Import", "Data Import Complete.");
+        }
+        catch (Exception ex)
+        {
+            MyGlobalMsg.ProcessError(ex);
+        }
     }
 
     private async void OpenTransactionDialog(ImportFileLineRecord record)

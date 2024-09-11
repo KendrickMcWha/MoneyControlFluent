@@ -93,10 +93,13 @@ public static class ImportAgent
                 {
                     if (dataCount >= 4)
                     {
+                     
                         allFileLines.Add(
                             new ImportFileLineRecord(line,
                                             data,
+                                            accountId,
                                             data[0] ?? string.Empty,
+                                            DateAsInt(data[0]),
                                             data[1] ?? string.Empty,
                                             data[2] ?? string.Empty,
                                             data[3] ?? string.Empty)
@@ -115,7 +118,9 @@ public static class ImportAgent
                         allFileLines.Add(
                             new ImportFileLineRecord(line,
                                             data,
+                                            accountId,
                                             data[3] ?? string.Empty,
+                                            DateAsInt(data[3]),
                                             data[0] ?? string.Empty,
                                             fundsOut,
                                             fundsIn)
@@ -134,5 +139,17 @@ public static class ImportAgent
         return allFileLines;
     }
 
+    private static int DateAsInt(string dataZero)
+    {
+        int dateAsInt = 0;
+        if (!string.IsNullOrEmpty(dataZero))
+        {
+            int[] dateValues = dataZero.Split("/")
+                                        .Select(int.Parse)
+                                        .ToArray();
+            dateAsInt = Convert.ToInt32($"{dateValues[2]:D2}{dateValues[0]:D2}{dateValues[1]:D2}");
+        }
 
+        return dateAsInt;
+    }
 }

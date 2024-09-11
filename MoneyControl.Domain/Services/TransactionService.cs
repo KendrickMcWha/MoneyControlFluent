@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MoneyControl.Domain.Data.Entities;
 
 namespace MoneyControl.Domain.Services;
 public class TransactionService : ServiceBase, IDisposable
@@ -111,9 +112,35 @@ public class TransactionService : ServiceBase, IDisposable
         return await query.ToListAsync();
     }
 
-    public async Task<Result> SaveImportTransactions(List<ImportTransactionRecord> allFileLines)
+    public async Task<Result> SaveImportTransactions(List<ImportTransactionRecord> allTransRecords)
     {
-        return new Result(false, string.Empty);
+
+        foreach (var trans in allTransRecords)
+        {
+            await SaveImportTransaction(trans);
+
+        }
+
+        await MyDbContext.SaveChangesAsync();
+
+        return new Result(true, string.Empty);
+    }
+    private async Task SaveImportTransaction(ImportTransactionRecord transactionRecord)
+    {
+        TransactionEntity entity = new()
+        {
+            AccountId = transactionRecord.AccountId,
+            BudgetDate = transactionRecord.DateAsInt,
+            TransDate = transactionRecord.DateAsInt,
+            CategoryId = transactionRecord.DefaultCatId ?? 0,
+            Details = transactionRecord.Details,
+            PostDate = transactionRecord.DateAsInt,
+            TotalAmount = transactionRecord.TransAmount,
+            TransType = transactionRecord.TransType,
+            Reference = string.Empty
+        };
+
+        MyDbContext.AllTransactions.Add(entity);
     }
 
 }

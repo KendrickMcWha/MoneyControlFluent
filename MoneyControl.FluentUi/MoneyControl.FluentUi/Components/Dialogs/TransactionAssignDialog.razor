@@ -88,8 +88,18 @@
                         SelectedCategory = category;
                     }
                 }
-
-            }            
+            }    
+            else
+            {
+                if (Content.DefaultPayId is not null)
+                {
+                    SelectedPayee = AllPayees.Find(x => x.Id == Content.DefaultPayId);
+                }
+                if (Content.DefaultCatId is not null)
+                {
+                    SelectedCategory = AllCategories.Find(x => x.Id == Content.DefaultCatId);
+                }
+            }
         }
         catch (Exception ex)
         {

@@ -64,13 +64,13 @@ public static class ImportAgent
     //        {
     //            throw ex;
     //        }
-            
+
     //    }
 
     //    return allFileLines;
     //}
 
-    public static async Task<List<ImportFileLineRecord>> LoadImportFile( int accountId, FluentInputFileEventArgs file, Dictionary<int, string> Files)
+    public static async Task<List<ImportFileLineRecord>> LoadImportFile(int accountId, FluentInputFileEventArgs file, Dictionary<int, string> Files)
     {
         List<ImportFileLineRecord> allFileLines = new();
 
@@ -89,11 +89,12 @@ public static class ImportAgent
                 string dataZero = data[0].ToUpperInvariant();
                 if (dataZero == "DATE" || dataZero == "Description".ToUpperInvariant()) continue;
                 int dataCount = data.Count;
+
                 if (accountId == 1)
                 {
                     if (dataCount >= 4)
                     {
-                     
+
                         allFileLines.Add(
                             new ImportFileLineRecord(line,
                                             data,
@@ -106,7 +107,7 @@ public static class ImportAgent
                             );
                     }
                 }
-                else if (accountId == 2) 
+                else if (accountId == 2)
                 {
                     if (dataCount >= 5)
                     {
@@ -127,7 +128,7 @@ public static class ImportAgent
                             );
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -138,6 +139,7 @@ public static class ImportAgent
 
         return allFileLines;
     }
+
 
     private static int DateAsInt(string dataZero)
     {

@@ -26,7 +26,7 @@
     <FluentTab Label="Month By Month Bar" Id="tabMonthByMonthBar">
         @foreach (TransactionMonth month in AllTransMonths)
         {
-            <ApexChart TItem="CategoryTransSpend" Title="@month.MonthDisplay" @ref="ChartBar" Debug >
+            <ApexChart TItem="CategoryTransSpend" Title="@month.MonthDisplay" @ref="ChartBar" Debug="true">
                 <ApexPointSeries TItem="CategoryTransSpend"
                                  Items="@month.AllCategorySpends"
                                  Name="Spending"

@@ -23,7 +23,7 @@
                 Title="Monthly Income Expenses"
                 Options="ChartOptionsStack"
                 Height="500"
-                @ref=ChartStack Debug>
+                @ref=ChartStack Debug="true">
 
                 <ApexPointSeries TItem="TransactionMonth"
                     Items="AllTransMonths"
@@ -50,7 +50,7 @@
                 Title="Monthly Income Expenses"
                 Options="ChartOptionsHorizontal"
                 Height="500"
-                @ref=ChartHorizontal Debug>
+                       @ref=ChartHorizontal Debug="true">
 
                 <ApexPointSeries TItem="TransactionMonth"
                     Items="AllTransMonths"
@@ -77,7 +77,7 @@
              <ApexChart TItem="TransactionMonth"
                 Title="Monthly Income Expenses"
                 Height="500"
-                @ref=ChartBasic Debug>
+                       @ref=ChartBasic Debug="true">
 
             <ApexPointSeries TItem="TransactionMonth"
                 Items="AllTransMonths"
@@ -105,7 +105,7 @@
             <ApexChart TItem="TransactionMonth"
                         title="Monthly Income Expenses"
                         Height="500"
-                        @ref="ChartLine" Debug>
+                       @ref="ChartLine" Debug="true">
                 <ApexPointSeries TItem="TransactionMonth"
                         Items="AllTransMonths"
                         Name="Income"
@@ -148,7 +148,7 @@
                 <ApexChart TItem="TransactionMonth"
                            title="Monthly Income Expenses"
                            Height="500"
-                           @ref="ChartArea" Debug>
+                           @ref="ChartArea" Debug="true">
                     <ApexPointSeries TItem="TransactionMonth"
                                      Items="AllTransMonths"
                                      Name="Income"

@@ -1,13 +1,66 @@
 ﻿@page "/workspace"
 
 <h3>Workspace Page</h3>
-<FluentButton OnClick="MakePayeeDetails">PayeeDetails</FluentButton>
 
+<FluentDataGrid Items="@people" >
+    <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" Title="Person ID" />
+    <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name"/>
+    <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Title="Birth Date"/>
+</FluentDataGrid>
 
+<FluentDataGrid id="defaultGrid"
+                Items=RowsGrid.AsQueryable()
+                GridTemplateColumns="1fr 1fr"
+                TGridItem=SampleGridData
+                OnRowClick="HandleRowClick"
+                OnCellClick="HandleCellClick"
+                RowSize="@DataGridRowSize.Medium">
+    <TemplateColumn Title="Name">
+        <FluentTextField @bind-Value="@context!.Name" />
+    </TemplateColumn>
+    <TemplateColumn Title="Age">
+        <FluentNumberField @bind-Value="@context!.Age" TValue="int" />
+    </TemplateColumn>
+</FluentDataGrid>
 @code {
 
-    private void MakePayeeDetails()
+    record Person(int PersonId, string Name, DateOnly BirthDate);
+
+    IQueryable<Person> people = new[]
     {
-        
+        new Person(10895, "Jean Martin", new DateOnly(1985, 3, 16)),
+        new Person(10944, "António Langa", new DateOnly(1991, 12, 1)),
+        new Person(11203, "Julie Smith", new DateOnly(1958, 10, 10)),
+        new Person(11205, "Nur Sari", new DateOnly(1922, 4, 27)),
+        new Person(11898, "Jose Hernandez", new DateOnly(2011, 5, 3)),
+        new Person(12130, "Kenji Sato", new DateOnly(2004, 1, 9)),
+    }.AsQueryable();
+
+    public class SampleGridData
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+        public SampleGridData(string name, int age)
+        {
+            Name = name;
+            Age = age;
+        }
     }
+
+    List<SampleGridData> RowsGrid = new()
+    {
+        new SampleGridData("Rob", 19 ),
+        new SampleGridData("Bob", 20 )
+    };
+    private void HandleRowClick(FluentDataGridRow<SampleGridData> row)
+    {
+        Console.WriteLine($"Row focused: {row.RowIndex}");
+    }
+
+    private void HandleCellClick(FluentDataGridCell<SampleGridData> cell)
+    {
+        Console.WriteLine($"Cell focused: {cell.GridColumn}");
+    }
+
 }

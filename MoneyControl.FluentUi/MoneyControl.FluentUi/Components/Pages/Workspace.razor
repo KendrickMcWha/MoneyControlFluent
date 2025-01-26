@@ -1,0 +1,35 @@
+﻿@* @page "/workspace"
+@using MoneyControl.Domain.Models
+
+<h3>Workspace</h3>
+
+<FluentDataGrid Items="data" OnRowDoubleClick="HandleRowDoubleClick" Class="my-data-grid">
+    <PropertyColumn Property="@(p => p.Id)" Title="ID" />
+    <PropertyColumn Property="@(p => p.Name)" Title="Name" />
+    <PropertyColumn Property="@(p => p.Age)" Title="Age" />
+</FluentDataGrid>
+
+@code {
+    private List<Person> data = new()
+    {
+        new Person { Id = 1, Name = "John Doe", Age = 30 },
+        new Person { Id = 2, Name = "Jane Smith", Age = 25 },
+        new Person { Id = 3, Name = "Michael Brown", Age = 35 }
+    };
+
+    private void HandleRowDoubleClick(object row)
+    {
+        if (row is Person person)
+        {
+            Console.WriteLine($"Row double-clicked: ID={person.Id}, Name={person.Name}, Age={person.Age}");
+        }
+    }
+
+    public class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+}
+ *@

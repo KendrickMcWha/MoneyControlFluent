@@ -6,6 +6,7 @@ using MoneyControl.Domain.Data.Context;
 using MoneyControl.Domain.Models;
 using MoneyControl.Domain.Services;
 using MoneyControl.FluentUi.Components.Global;
+using Serilog;
 
 namespace MoneyControl.FluentUi.Components.Pages;
 
@@ -20,20 +21,23 @@ public partial class TransactionsPage : ComponentBase
     private List<Category> AllCategories { get; set; } = new();
     private Account _selectedAccount;
     private Category _selectedCategory;
-    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, 1); 
+    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, DateTime.Now.Month , 1).AddMonths(-1); 
     private DateTime? _selectedDateTo = DateTime.Now;
     private Account SelectedAccount { get { return _selectedAccount; } set { _selectedAccount = value; ReloadData(); } }
     private Category SelectedCategory { get { return _selectedCategory; } set { _selectedCategory = value; ReloadData(); } }
+    
     private IEnumerable<Category> AllSelectedCategories { get; set; }
     private DateTime? SelectedDateFrom { get { return _selectedDateFrom; } set { _selectedDateFrom = value; ReloadData(); } }
     private DateTime? SelectedDateTo { get { return _selectedDateTo; } set { _selectedDateTo = value; ReloadData(); } }
 
-    
+    private Transaction MySetTransaction { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+           // DateTime preSelectDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+           // _selectedDateFrom = preSelectDate.AddMonths(-1);
             await GetAccounts();
             await GetCategories();
             await GetTransactions();
@@ -70,6 +74,22 @@ public partial class TransactionsPage : ComponentBase
         AllTransactions = allTrans.AsQueryable();
     }
 
-    
+    private void HandleDoubleClick(FluentDataGridRow<Transaction> row)
+    {
+        Log.Information($"Row Double Click {row.RowIndex}");
+        if (row.Item is Transaction trans)
+        {
+            Log.Information($"{trans.TotalAmount} {trans.CategoryName} {trans.Details}");
+            ClearDoubleClick();
+            MySetTransaction = trans;
+            
+        }
+    }
+
+    private void ClearDoubleClick()
+    {
+        MySetTransaction = null;
+        StateHasChanged();
+    }
 
 }

@@ -2,26 +2,30 @@
 
 <h3>Workspace Page</h3>
 
-<FluentDataGrid Items="@people" >
+<FluentDataGrid Items="@people" TGridItem="Person"
+OnRowClick="HandleRowClick"
+OnCellClick="HandleCellClick"
+OnRowDoubleClick="HandleDoubleClick" 
+>
     <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" Title="Person ID" />
     <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Name"/>
     <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Title="Birth Date"/>
 </FluentDataGrid>
 
-<FluentDataGrid id="defaultGrid"
-                Items=RowsGrid.AsQueryable()
-                GridTemplateColumns="1fr 1fr"
-                TGridItem=SampleGridData
-                OnRowClick="HandleRowClick"
-                OnCellClick="HandleCellClick"
-                RowSize="@DataGridRowSize.Medium">
+@* <FluentDataGrid id="defaultGrid"
+Items=RowsGrid.AsQueryable()
+GridTemplateColumns="1fr 1fr"
+TGridItem=SampleGridData
+OnRowClick="HandleRowClick"
+OnCellClick="HandleCellClick"
+RowSize="@DataGridRowSize.Medium">
     <TemplateColumn Title="Name">
         <FluentTextField @bind-Value="@context!.Name" />
     </TemplateColumn>
     <TemplateColumn Title="Age">
         <FluentNumberField @bind-Value="@context!.Age" TValue="int" />
     </TemplateColumn>
-</FluentDataGrid>
+</FluentDataGrid> *@
 @code {
 
     record Person(int PersonId, string Name, DateOnly BirthDate);
@@ -53,14 +57,22 @@
         new SampleGridData("Rob", 19 ),
         new SampleGridData("Bob", 20 )
     };
-    private void HandleRowClick(FluentDataGridRow<SampleGridData> row)
+    private void HandleRowClick(FluentDataGridRow<Person> row)
     {
-        Console.WriteLine($"Row focused: {row.RowIndex}");
+        Log.Information($"Row focused: {row.RowIndex}");
     }
 
-    private void HandleCellClick(FluentDataGridCell<SampleGridData> cell)
+    private void HandleCellClick(FluentDataGridCell<Person> cell)
     {
-        Console.WriteLine($"Cell focused: {cell.GridColumn}");
+        Log.Information($"Cell focused: {cell.GridColumn}");
     }
 
+    private void HandleDoubleClick(FluentDataGridRow<Person> row)
+    {
+        Log.Information($"Row Double Click {row.RowIndex}");
+        if (row.Item is Person person)
+        {
+            Log.Information($"{person.PersonId} {person.Name} {person.BirthDate}");
+        }
+    }
 }

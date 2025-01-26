@@ -16,16 +16,17 @@
     </FluentGridItem>
     <FluentGridItem>
         <FluentSelect Items="@AllCategories" TOption="Category" 
-                        @bind-SelectedOption="SelectedCategory"
-                        OptionText="@(i => i.Name)" Label="Category" 
-                        Height="20rem"/>
+        @bind-SelectedOption="SelectedCategory"
+        OptionText="@(i => i.Name)" Label="Category" 
+        Height="20rem"/>
     </FluentGridItem>
     <FluentGridItem>
         <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="ReloadData" IconStart="@(new Icons.Regular.Size20.Search())" >Load</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
-@* <FluentDataGrid ShowHover TGridItem="Transaction" Items="AllTransactions" Pagination="@pagination" >
+<FluentDataGrid ShowHover TGridItem="Transaction" Items="AllTransactions" Pagination="@pagination"
+OnRowDoubleClick="HandleDoubleClick">
     <PropertyColumn Property="@(p => p.AccountName)" Title="Account" Sortable="true" Width="10rem" />
     <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" Width="8rem"/>
     <PropertyColumn Property="@(p => p.TransTypeDisplay)" Title="Type" Sortable="true" Width="7rem" />
@@ -35,9 +36,20 @@
     <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" />
 </FluentDataGrid>
 
-<FluentPaginator State="@pagination" /> *@
+<FluentPaginator State="@pagination" /> 
 
-    <FluentDataGrid Items="@AllTransactions">
+
+<FluentDivider />
+
+@if(MySetTransaction is not null)
+{
+    <TransactionSetterComponent MyTransaction="MySetTransaction" ClearTrans="ClearDoubleClick" />
+     
+}
+
+
+
+@*     <FluentDataGrid Items="@AllTransactions">
         <PropertyColumn Property="@(t => t.AccountName)" Sortable="true" />
         <PropertyColumn Property="@(t => t.AmountCurrency)" Sortable="true" />
-    </FluentDataGrid>
+    </FluentDataGrid> *@

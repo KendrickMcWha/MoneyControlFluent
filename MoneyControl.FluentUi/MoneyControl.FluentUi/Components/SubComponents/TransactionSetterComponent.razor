@@ -1,0 +1,114 @@
+﻿@namespace MoneyControl.FluentUi.SubComponents
+
+<FluentCard Height="18rem">
+    <h3 >Transaction Set</h3>
+
+    <FluentDataGrid ShowHover TGridItem="Transaction" Items="AllTransactions">
+        <PropertyColumn Property="@(p => p.AccountName)" Title="Account" Sortable="true" Width="10rem" />
+        <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" Width="8rem" />
+        <PropertyColumn Property="@(p => p.TransTypeDisplay)" Title="Type" Sortable="true" Width="7rem" />
+        <PropertyColumn Property="@(p => p.AmountCurrency)" Title="Total Amount" Sortable="true" Width="8rem" Align="Align.End" Style="font-weight:bold" />
+        <PropertyColumn Property="@(p => p.CategoryName)" Title="Category" Sortable="true" Width="20rem" />
+        <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" />
+        <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" />
+    </FluentDataGrid>
+
+    <FluentGrid Style="margin-top:2rem">
+        <FluentGridItem>
+            <FluentSelect Items="@AllTransTypes" TOption="TransactionType" @bind-bind-SelectedOption="MySelectedType"
+            OptionText="@(i => i.Description)" Label="Transaction Type" Height="20rem" />
+        </FluentGridItem>
+        <FluentGridItem>
+            <FluentButton Style="margin-top:1.5rem" OnClick="ApplyTransType">Apply</FluentButton>
+        </FluentGridItem>
+        <FluentGridItem>
+            <FluentSelect Items="@AllCategories" TOption="Category"
+            @bind-SelectedOption="MySelectedCategory"
+            OptionText="@(i => i.Name)" Label="Assign Category"
+            Height="20rem" />
+        </FluentGridItem>
+        <FluentGridItem>
+            <FluentButton Style="margin-top:1.5rem" OnClick="ApplyCategory">Apply</FluentButton>
+        </FluentGridItem>
+        <FluentGridItem>
+            <FluentSelect Items="@AllPayees" TOption="Payee"
+            @bind-SelectedOption="MySelectedPayee"
+            OptionText="@(i => i.Name)" Label="Assign Payee"
+            Height="20rem" />
+        </FluentGridItem>
+        <FluentGridItem>
+            <FluentButton Style="margin-top:1.5rem" OnClick="ApplyPayee">Apply</FluentButton>
+        </FluentGridItem>
+        <FluentSpacer />
+        <FluentGridItem>
+            <FluentButton Style="margin-top:1.5rem" OnClick="ClearSetTransaction">Done</FluentButton>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentCard>
+
+@code {
+    [Parameter] public Transaction MyTransaction {get;set;}
+    [Parameter] public EventCallback ClearTrans { get; set; }
+    [Inject] public IUITransactionService MyTransactionService { get; set; }
+    [Inject] public IUITransactionTypeService MyTransTypeService { get; set; }
+    [Inject] public IUIPayeeService MyPayeeService{ get; set; }
+
+    private IQueryable<Transaction> AllTransactions { get; set; }
+    private List<Category> AllCategories { get; set; } = new();
+    private List<TransactionType> AllTransTypes { get; set; } = new();
+    private List<Payee> AllPayees { get; set; } = new();
+    private Category MySelectedCategory { get { return _selectedCategory; } set { _selectedCategory = value; } }
+    private TransactionType MySelectedType { get { return _selectedTransType; } set { _selectedTransType = value; } }
+    private Payee MySelectedPayee { get { return _selectedPayee; } set { _selectedPayee = value; } }
+    private Category _selectedCategory;
+    private TransactionType _selectedTransType;
+    private Payee _selectedPayee;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllTransactions = new[] { MyTransaction }.AsQueryable();
+        await GetCategories();
+        await GetTransTypes();
+        await GetPayees();
+
+    }
+
+    private async Task GetCategories()
+    {
+        AllCategories = await MyTransactionService.GetAllCategories();
+        AllCategories.Insert(0, new Category() { Id = 0, Name = "", Type = string.Empty });
+        _selectedCategory = AllCategories.FirstOrDefault(x => x.Id == MyTransaction.CategoryId);
+        Log.Information($"Category {MyTransaction.CategoryId} {_selectedCategory.Id}");
+    }
+    private async Task GetTransTypes()
+    {
+        AllTransTypes = await MyTransTypeService.GetAllTransTypes();
+        _selectedTransType = AllTransTypes.FirstOrDefault(x => x.Value == MyTransaction.TransType);
+        Log.Information($"Trans Type {MyTransaction.TransType} {_selectedTransType.Value}");
+    }
+    private async Task GetPayees()
+    {
+        AllPayees = await MyPayeeService.GetAllPayees();
+        AllPayees = AllPayees.OrderBy(x => x.Name).ToList();
+        _selectedPayee = AllPayees.FirstOrDefault(x => x.Name == MyTransaction.PayeeName);
+    }
+
+    private void ApplyCategory()
+    {
+
+    }
+    private void ApplyTransType()
+    {
+
+    }
+    private void ApplyPayee()
+    {
+        
+    }
+
+    private void ClearSetTransaction()
+    {
+        ClearTrans.InvokeAsync();
+    }
+}

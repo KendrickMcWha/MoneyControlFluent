@@ -29,6 +29,7 @@ public static class StaticBuilder
             Id = entity.Id,
             AccountId = entity.AccountId,
             CategoryId = entity.CategoryId,
+            PayeeId = entity.PayeeId,
             TotalAmount = entity.TotalAmount,
             TransType = entity.TransType,
             TransDateStr = entity.TransDate,
@@ -37,7 +38,8 @@ public static class StaticBuilder
           //  RegularPaymentId = entity.RegularPaymentId ?? -1,
             Details = entity.Details,
             Reference = entity.Reference,
-            BudgetDate = DateOnly.ParseExact(entity.BudgetDate.ToString(), "yyyyMMdd")
+            BudgetDate = DateOnly.ParseExact(entity.BudgetDate.ToString(), "yyyyMMdd"),
+            
         };
 
         return trans;
@@ -50,6 +52,7 @@ public static class StaticBuilder
             Id = entity.Id,
             AccountId = entity.AccountId,
             CategoryId = entity.CategoryId,
+            PayeeId = entity.PayeeId,
             TotalAmount = entity.TotalAmount,
             TransType = entity.TransType,
             //TransDate = DateOnly.ParseExact( entity.TransDate, "yyyyMMdd", CultureInfo.InvariantCulture),

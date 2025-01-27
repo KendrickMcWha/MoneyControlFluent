@@ -143,4 +143,35 @@ public class TransactionService : ServiceBase, IDisposable
         MyDbContext.AllTransactions.Add(entity);
     }
 
+    public async Task<bool> SetTransactionCategory(Transaction trans)
+    {
+        TransactionEntity entity = MyDbContext.AllTransactions.FirstOrDefault(x => x.Id == trans.Id);
+        if (entity is null) return false;
+
+        entity.CategoryId = trans.CategoryId;
+
+        await MyDbContext.SaveChangesAsync();
+        return true;
+    }
+    public async Task<bool> SetTransactionType(Transaction trans)
+    {
+        TransactionEntity entity = MyDbContext.AllTransactions.FirstOrDefault(x => x.Id == trans.Id);
+        if (entity is null) return false;
+
+        entity.TransType = trans.TransType;
+
+        await MyDbContext.SaveChangesAsync();
+        return true;
+    }
+    public async Task<bool> SetTransactionPayee(Transaction trans)
+    {
+        TransactionEntity entity = MyDbContext.AllTransactions.FirstOrDefault(x => x.Id == trans.Id);
+        if (entity is null) return false;
+
+        entity.PayeeId = trans.PayeeId;
+
+        await MyDbContext.SaveChangesAsync();
+        return true;
+    }
+
 }

@@ -94,17 +94,21 @@
         _selectedPayee = AllPayees.FirstOrDefault(x => x.Name == MyTransaction.PayeeName);
     }
 
-    private void ApplyCategory()
+    private async Task ApplyCategory()
     {
+        MyTransaction.CategoryId = MySelectedCategory.Id;
+        await MyTransactionService.SetTransactionCategory(MyTransaction);
 
     }
-    private void ApplyTransType()
+    private async Task ApplyTransType()
     {
-
+        MyTransaction.TransType = MySelectedType.Value;
+        await MyTransactionService.SetTransactionType(MyTransaction);
     }
-    private void ApplyPayee()
+    private async Task ApplyPayee()
     {
-        
+        MyTransaction.PayeeId = MySelectedPayee.Id;
+        await MyTransactionService.SetTransactionPayee(MyTransaction);
     }
 
     private void ClearSetTransaction()

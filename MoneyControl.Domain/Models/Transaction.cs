@@ -4,6 +4,7 @@ public class Transaction
     public int Id { get; set; }
     public int AccountId { get; set; }
     public int CategoryId { get; set; }
+    public int PayeeId { get; set; }
     public decimal TotalAmount { get; set; }
     public int TransType { get; set; }
     public int TransDateStr { get; set; }

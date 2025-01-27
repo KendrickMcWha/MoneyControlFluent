@@ -12,6 +12,8 @@ public class TransactionEntity
    // public int? RegularPaymentId { get; set; }
     public string Details { get; set; }
     public string Reference { get; set; }
+    public int PayeeId { get; set; }
+
 
     //public long TransDateInt => Convert.ToInt64(TransDate);
     //public long BudgetDateInt => Convert.ToInt64(BudgetDate);

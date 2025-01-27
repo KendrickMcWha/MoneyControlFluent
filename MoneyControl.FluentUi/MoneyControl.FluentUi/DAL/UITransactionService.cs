@@ -31,5 +31,19 @@ public class UITransactionService : UIServiceBase, IDisposable, IUITransactionSe
         return await service.GetAllTransactions(payload);
     }
 
-    
+    public async Task<bool> SetTransactionCategory(Transaction trans)
+    {
+        using TransactionService service = new(NewDbContext);
+        return await service.SetTransactionCategory(trans);
+    }
+    public async Task<bool> SetTransactionType(Transaction trans)
+    {
+        using TransactionService service = new(NewDbContext);
+        return await service.SetTransactionType(trans);
+    }
+    public async Task<bool> SetTransactionPayee(Transaction trans)
+    {
+        using TransactionService service = new(NewDbContext);
+        return await service.SetTransactionPayee(trans);
+    }
 }

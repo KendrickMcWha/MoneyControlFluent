@@ -41,7 +41,7 @@
         </FluentGridItem>
         <FluentSpacer />
         <FluentGridItem>
-            <FluentButton Style="margin-top:1.5rem" OnClick="ClearSetTransaction">Done</FluentButton>
+            <FluentButton Style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="ClearSetTransaction">Done</FluentButton>
         </FluentGridItem>
     </FluentGrid>
 </FluentCard>
@@ -107,6 +107,7 @@
         MyTransaction.CategoryId = MySelectedCategory.Id;
         await MyTransactionService.SetTransactionCategory(MyTransaction);
         MyToastService.ShowSuccess("Category Updated.");
+        InvokeAsync(StateHasChanged);
 
     }
     private async Task ApplyTransType()

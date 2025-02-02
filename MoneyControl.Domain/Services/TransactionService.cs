@@ -29,7 +29,7 @@ public class TransactionService : ServiceBase, IDisposable
     public async Task<List<Transaction>> GetAllTransactions(TransactionParamPayload payload)
     {
         bool skipFilterAcct = payload.accountId == 0;
-        bool skipFilterCat = payload.categoryId == 0;
+        bool skipFilterCat = payload.categoryId == -1;
         DateOnly startDate = payload.startDate ?? Constants.DataStartDate;
         DateOnly endDate = payload.endDate ?? DateOnly.FromDateTime(DateTime.Now);
         int startDateInt = Convert.ToInt32( startDate.ToString("yyyyMMdd"));

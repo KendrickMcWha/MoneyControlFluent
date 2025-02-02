@@ -21,7 +21,7 @@ public partial class TransactionsPage : ComponentBase
     private List<Category> AllCategories { get; set; } = new();
     private Account _selectedAccount;
     private Category _selectedCategory;
-    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, DateTime.Now.Month , 1).AddMonths(-1); 
+    private DateTime? _selectedDateFrom = new DateTime(DateTime.Now.Year, DateTime.Now.Month , 1).AddMonths(-2); 
     private DateTime? _selectedDateTo = DateTime.Now;
     private Account SelectedAccount { get { return _selectedAccount; } set { _selectedAccount = value; ReloadData(); } }
     private Category SelectedCategory { get { return _selectedCategory; } set { _selectedCategory = value; ReloadData(); } }
@@ -48,6 +48,14 @@ public partial class TransactionsPage : ComponentBase
         }
     }
 
+    private string TransactionTextStyle(Transaction trans)
+    {
+        if (trans is null) return string.Empty;
+
+        if (trans.TransType > 0) return "font-weight:bold;color:Red";
+        return "font-weight:bold;color:Black";
+    }
+
     private async Task GetAccounts()
     {
         AllAccounts = await MyTransactionService.GetAllAccounts();
@@ -57,7 +65,15 @@ public partial class TransactionsPage : ComponentBase
     private async Task GetCategories()
     {
         AllCategories = await MyTransactionService.GetAllCategories();
-        AllCategories.Insert(0, new Category() { Id = 0, Name = "All", Type = string.Empty });
+        AllCategories = AllCategories.OrderBy(x => x.Name).ToList();
+        var cat = AllCategories.FirstOrDefault(x => x.Name == "Unassigned");
+        if (cat is not null)
+        {
+            AllCategories.Remove(cat);
+            AllCategories.Insert(0, cat);
+        }
+
+        AllCategories.Insert(0, new Category() { Id = -1, Name = "All", Type = string.Empty });
         _selectedCategory = AllCategories[0];
     }
     private async void ReloadData()

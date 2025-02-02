@@ -15,23 +15,23 @@
 
     <FluentGrid Style="margin-top:2rem">
         <FluentGridItem>
-            <FluentSelect Items="@AllTransTypes" TOption="TransactionType" @bind-bind-SelectedOption="MySelectedType"
+            <FluentSelect Items="@AllTransTypes" TOption="TransactionType" @bind-SelectedOption="MySelectedType" Position="SelectPosition.Above"
             OptionText="@(i => i.Description)" Label="Transaction Type" Height="20rem" />
         </FluentGridItem>
         <FluentGridItem>
             <FluentButton Style="margin-top:1.5rem" OnClick="ApplyTransType">Apply</FluentButton>
         </FluentGridItem>
         <FluentGridItem>
-            <FluentSelect Items="@AllCategories" TOption="Category"
+            <FluentSelect Items="@AllCategories" TOption="Category" Position="SelectPosition.Above"
             @bind-SelectedOption="MySelectedCategory"
             OptionText="@(i => i.Name)" Label="Assign Category"
-            Height="20rem" />
+            Height="10rem" />
         </FluentGridItem>
         <FluentGridItem>
             <FluentButton Style="margin-top:1.5rem" OnClick="ApplyCategory">Apply</FluentButton>
         </FluentGridItem>
         <FluentGridItem>
-            <FluentSelect Items="@AllPayees" TOption="Payee"
+            <FluentSelect Items="@AllPayees" TOption="Payee" Position="SelectPosition.Above"
             @bind-SelectedOption="MySelectedPayee"
             OptionText="@(i => i.Name)" Label="Assign Payee"
             Height="20rem" />
@@ -52,6 +52,7 @@
     [Inject] public IUITransactionService MyTransactionService { get; set; }
     [Inject] public IUITransactionTypeService MyTransTypeService { get; set; }
     [Inject] public IUIPayeeService MyPayeeService{ get; set; }
+    [Inject] public IToastService MyToastService { get; set; }
 
     private IQueryable<Transaction> AllTransactions { get; set; }
     private List<Category> AllCategories { get; set; } = new();
@@ -77,6 +78,13 @@
     private async Task GetCategories()
     {
         AllCategories = await MyTransactionService.GetAllCategories();
+        AllCategories = AllCategories.OrderBy(x => x.Name).ToList();
+        var cat = AllCategories.FirstOrDefault(x => x.Name == "Unassigned");
+        if (cat is not null)
+        {
+            AllCategories.Remove(cat);
+            AllCategories.Insert(0, cat);
+        }
         AllCategories.Insert(0, new Category() { Id = 0, Name = "", Type = string.Empty });
         _selectedCategory = AllCategories.FirstOrDefault(x => x.Id == MyTransaction.CategoryId);
         Log.Information($"Category {MyTransaction.CategoryId} {_selectedCategory.Id}");
@@ -98,17 +106,20 @@
     {
         MyTransaction.CategoryId = MySelectedCategory.Id;
         await MyTransactionService.SetTransactionCategory(MyTransaction);
+        MyToastService.ShowSuccess("Category Updated.");
 
     }
     private async Task ApplyTransType()
     {
         MyTransaction.TransType = MySelectedType.Value;
         await MyTransactionService.SetTransactionType(MyTransaction);
+        MyToastService.ShowSuccess("Transaction Type Updated.");
     }
     private async Task ApplyPayee()
     {
         MyTransaction.PayeeId = MySelectedPayee.Id;
         await MyTransactionService.SetTransactionPayee(MyTransaction);
+        MyToastService.ShowSuccess("Payee Updated.");
     }
 
     private void ClearSetTransaction()

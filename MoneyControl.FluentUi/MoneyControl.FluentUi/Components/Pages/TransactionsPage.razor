@@ -30,7 +30,12 @@ OnRowDoubleClick="HandleDoubleClick">
     <PropertyColumn Property="@(p => p.AccountName)" Title="Account" Sortable="true" Width="10rem" />
     <PropertyColumn Property="@(p => p.BudgetDate)" Title="Date" Sortable="true" Width="8rem"/>
     <PropertyColumn Property="@(p => p.TransTypeDisplay)" Title="Type" Sortable="true" Width="7rem" />
-    <PropertyColumn Property="@(p => p.AmountCurrency)" Title="Total Amount" Sortable="true" Width="8rem" Align="Align.End" Style="font-weight:bold"/>
+    @* <PropertyColumn Property="@(p => p.AmountCurrency)" Title="Total Amount" Sortable="true" Width="8rem" Align="Align.End" Style="font-weight:bold" /> *@
+    <TemplateColumn Title="Amount" Sortable="true" Align="Align.End">
+        <span style="font-weight:bold;color: @(context.TransType < 0 ? "red" : "green")">
+            @(context.AmountCurrency)
+        </span>
+    </TemplateColumn>
     <PropertyColumn Property="@(p => p.CategoryName)" Title="Category" Sortable="true" Width="20rem"/>
     <PropertyColumn Property="@(p => p.Details)" Title="Details" Sortable="true" />
     <PropertyColumn Property="@(p => p.PayeeName)" Title="Payee" Sortable="true" />
@@ -46,10 +51,3 @@ OnRowDoubleClick="HandleDoubleClick">
     <TransactionSetterComponent MyTransaction="MySetTransaction" ClearTrans="ClearDoubleClick" />
      
 }
-
-
-
-@*     <FluentDataGrid Items="@AllTransactions">
-        <PropertyColumn Property="@(t => t.AccountName)" Sortable="true" />
-        <PropertyColumn Property="@(t => t.AmountCurrency)" Sortable="true" />
-    </FluentDataGrid> *@

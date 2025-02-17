@@ -107,5 +107,9 @@ public partial class TransactionsPage : ComponentBase
         MySetTransaction = null;
         StateHasChanged();
     }
+    private void UpdateTrans()
+    {
+        StateHasChanged();
+    }
 
 }

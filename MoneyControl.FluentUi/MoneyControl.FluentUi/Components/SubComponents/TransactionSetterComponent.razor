@@ -49,6 +49,7 @@
 @code {
     [Parameter] public Transaction MyTransaction {get;set;}
     [Parameter] public EventCallback ClearTrans { get; set; }
+    [Parameter] public EventCallback UpdateTrans{ get; set; }
     [Inject] public IUITransactionService MyTransactionService { get; set; }
     [Inject] public IUITransactionTypeService MyTransTypeService { get; set; }
     [Inject] public IUIPayeeService MyPayeeService{ get; set; }
@@ -107,6 +108,7 @@
         MyTransaction.CategoryId = MySelectedCategory.Id;
         await MyTransactionService.SetTransactionCategory(MyTransaction);
         MyToastService.ShowSuccess("Category Updated.");
+        UpdateTrans.InvokeAsync();
         InvokeAsync(StateHasChanged);
 
     }
@@ -115,12 +117,14 @@
         MyTransaction.TransType = MySelectedType.Value;
         await MyTransactionService.SetTransactionType(MyTransaction);
         MyToastService.ShowSuccess("Transaction Type Updated.");
+        UpdateTrans.InvokeAsync();
     }
     private async Task ApplyPayee()
     {
         MyTransaction.PayeeId = MySelectedPayee.Id;
         await MyTransactionService.SetTransactionPayee(MyTransaction);
         MyToastService.ShowSuccess("Payee Updated.");
+        UpdateTrans.InvokeAsync();
     }
 
     private void ClearSetTransaction()

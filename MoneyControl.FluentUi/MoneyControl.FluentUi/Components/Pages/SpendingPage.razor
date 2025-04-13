@@ -8,8 +8,11 @@
     <FluentDatePicker Label="Date To" @bind-Value="SelectedDateTo" View="CalendarViews.Months" />   
     <FluentButton style="margin-top:1.5rem" Appearance="Appearance.Accent" OnClick="ReloadData" IconStart="@(new Icons.Regular.Size20.Search())">Load</FluentButton>
 </FluentStack>
-
-<FluentTabs @bind-ValueId="@ActiveTabId">
+<div>
+    @TotalTransactions
+</div>
+<div>@TotalSpending</div>
+<FluentTabs @bind-ValueId="@ActiveTabId" Style="max-height:300px">
     <FluentTab Label="Month By Month Pie" Id="tabMonthByMonthPie">
         @foreach (TransactionMonth month in AllTransMonths)
         {
@@ -48,67 +51,4 @@
         }
     </FluentTab>
 </FluentTabs>
-   
-
-
-@code {
-    [CascadingParameter] GlobalMessage MyGlobalMsg {get;set;}
-    [Inject] public IUITransactionService MyTransactionService { get; set; }
-    private ApexChart<CategoryTransSpend> ChartPie;
-    private ApexChart<CategoryTransSpend> ChartBar;
-    private List<TransactionMonth> AllTransMonths { get; set; } = new();
-    private List<Category> AllCategories { get; set; } = new();
-    DateTime? SelectedDateFrom { get; set; }
-    DateTime? SelectedDateTo { get; set; }
-    private string ActiveTabId;
-
-    protected override async Task OnInitializedAsync()
-    {
-        SelectedDateTo = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-1);
-        SelectedDateFrom = DateTime.Now.AddDays(-DateTime.Now.Day + 1).AddMonths(-1);
-        await GetCategories();
-    }
-
-    private async Task GetCategories()
-    {
-        AllCategories = await MyTransactionService.GetAllCategories();
-    }
-
-    private async void ReloadData()
-    {
-        DateTime tmp = (DateTime)SelectedDateTo;
-
-        tmp = new DateTime(tmp.Year, tmp.Month, DateTime.DaysInMonth(tmp.Year, tmp.Month));
-
-        TransactionParamPayload payload = new(0, 0,
-                                                DateOnly.FromDateTime((DateTime)SelectedDateFrom),
-                                                DateOnly.FromDateTime(tmp)
-                                                );
-        var allTrans = await MyTransactionService.GetAllTransactions(payload);
-        allTrans = allTrans.Where(x => x.TransType == -1).ToList();
-        AllTransMonths.Clear();
-        foreach (var trans in allTrans)
-        {
-            DateOnly transMonthDate = new DateOnly(trans.BudgetDate.Year, trans.BudgetDate.Month, 1);
-
-            int type = trans.TransType < 0 ? -1 : 1;
-
-            TransactionMonth transactionMonth = AllTransMonths.Find(x => x.MonthDate == transMonthDate);
-            if (transactionMonth is null)
-            {
-                AllTransMonths.Add(transactionMonth = new(transMonthDate));
-            }
-            transactionMonth.AllTransactions.Add(trans);
-        }
-
-        AllTransMonths.ForEach(x => x.BuildBalances());
-        AllTransMonths.ForEach(x => x.BuildCategorySpends(AllCategories));
-
-        if (ChartPie is not null)
-        {
-            await ChartPie?.RenderAsync();
-            await ChartBar?.RenderAsync();
-        }
-
-    }
-}
+ 

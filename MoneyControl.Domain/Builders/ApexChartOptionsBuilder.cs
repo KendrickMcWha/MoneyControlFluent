@@ -112,7 +112,7 @@ public static class ApexChartOptionsBuilder
             },
 
             Colors = new List<string> { "#77B6EA", "#545454" },
-            Markers = new Markers { Shape = ShapeEnum.Circle, Size = 5, FillOpacity = new Opacity(0.8d) },
+   //ERROR         Markers = new Markers { Shape =  ShapeEnum.Circle, Size = 5, FillOpacity = new Opacity(0.8d) },
             Stroke = new Stroke { Curve = Curve.Smooth },
             Legend = new Legend
             {
